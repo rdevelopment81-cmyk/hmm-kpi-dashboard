@@ -108,10 +108,24 @@ function AuthPage() {
               <TabsContent value="signup">
                 <form onSubmit={signUp} className="space-y-3 pt-4">
                   <div><Label>Nama lengkap</Label><Input required value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div><Label>NIM</Label><Input value={nim} onChange={(e) => setNim(e.target.value)} /></div>
+                    <div>
+                      <Label>Divisi</Label>
+                      <Select value={divisionId} onValueChange={setDivisionId}>
+                        <SelectTrigger><SelectValue placeholder="Pilih divisi" /></SelectTrigger>
+                        <SelectContent>
+                          {(divisions ?? []).map((d: any) => (
+                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                   <div><Label>Password</Label><Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
                   <Button type="submit" className="w-full" disabled={loading}>{loading ? "Memproses..." : "Daftar"}</Button>
-                  <p className="text-xs text-muted-foreground">User pertama otomatis menjadi HR Admin.</p>
+                  <p className="text-xs text-muted-foreground">Akun baru berstatus <b>Pending</b> sampai diverifikasi HR Admin. User pertama otomatis menjadi HR Admin.</p>
                 </form>
               </TabsContent>
             </Tabs>
