@@ -216,6 +216,7 @@ export type Database = {
           id_kartu: string | null
           jabatan: string | null
           nim: string | null
+          status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
         }
         Insert: {
@@ -228,6 +229,7 @@ export type Database = {
           id_kartu?: string | null
           jabatan?: string | null
           nim?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Update: {
@@ -240,6 +242,7 @@ export type Database = {
           id_kartu?: string | null
           jabatan?: string | null
           nim?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Relationships: [
@@ -312,6 +315,7 @@ export type Database = {
       app_role: "bph" | "hr_admin" | "kadiv" | "anggota"
       attendance_status: "hadir" | "telat"
       jobdesk_status: "diajukan" | "disetujui" | "ditolak"
+      profile_status: "pending" | "aktif"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -442,6 +446,7 @@ export const Constants = {
       app_role: ["bph", "hr_admin", "kadiv", "anggota"],
       attendance_status: ["hadir", "telat"],
       jobdesk_status: ["diajukan", "disetujui", "ditolak"],
+      profile_status: ["pending", "aktif"],
     },
   },
 } as const

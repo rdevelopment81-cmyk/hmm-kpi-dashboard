@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { CreditCard, ScanLine, Search } from "lucide-react";
+import { CreditCard, ScanLine, Search, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/anggota")({
   component: AnggotaPage,
@@ -63,15 +63,22 @@ function AnggotaPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const filtered = (profiles ?? []).filter((p: any) =>
-    !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.nim?.includes(search),
-  );
+  const filtered = (profiles ?? [])
+    .filter((p: any) => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.nim?.includes(search))
+    .sort((a: any, b: any) => (a.status === "pending" ? -1 : 1) - (b.status === "pending" ? -1 : 1));
+
+  const pendingCount = (profiles ?? []).filter((p: any) => p.status === "pending").length;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Manajemen Anggota</h1>
-        <p className="text-sm text-muted-foreground">Kelola profil, role, divisi, dan kartu RFID anggota.</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Manajemen Anggota</h1>
+          <p className="text-sm text-muted-foreground">Verifikasi pendaftar baru, kelola profil, role, divisi, dan kartu RFID.</p>
+        </div>
+        {isHR && pendingCount > 0 && (
+          <Badge variant="destructive" className="gap-1">{pendingCount} menunggu verifikasi</Badge>
+        )}
       </div>
 
       <div className="relative">
@@ -82,8 +89,9 @@ function AnggotaPage() {
       <div className="grid gap-3">
         {filtered.map((p: any) => {
           const currentRole = p.user_roles?.[0]?.role ?? "anggota";
+          const isPending = p.status === "pending";
           return (
-            <Card key={p.id}>
+            <Card key={p.id} className={isPending ? "border-destructive/50" : undefined}>
               <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
                 <div className="flex flex-1 items-center gap-3">
                   <Avatar>
@@ -94,6 +102,7 @@ function AnggotaPage() {
                     <p className="font-semibold">{p.full_name || "(tanpa nama)"}</p>
                     <p className="text-xs text-muted-foreground">{p.email} · {p.nim || "—"}</p>
                     <div className="mt-1 flex flex-wrap gap-1">
+                      {isPending && <Badge variant="destructive">Pending</Badge>}
                       <Badge variant="outline">{p.divisions?.code ?? "Belum ada divisi"}</Badge>
                       <Badge>{currentRole}</Badge>
                       {p.id_kartu && <Badge variant="secondary" className="gap-1"><CreditCard className="h-3 w-3" /> {p.id_kartu}</Badge>}
@@ -115,6 +124,11 @@ function AnggotaPage() {
                     <Button variant="outline" size="sm" onClick={() => setRegTarget({ id: p.id, name: p.full_name })}>
                       <ScanLine className="mr-1 h-4 w-4" /> Kartu
                     </Button>
+                    {isPending && (
+                      <Button size="sm" onClick={() => updateProfile.mutate({ id: p.id, patch: { status: "aktif" } })}>
+                        <CheckCircle2 className="mr-1 h-4 w-4" /> Aktifkan
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
