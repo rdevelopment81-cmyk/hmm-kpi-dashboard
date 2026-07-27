@@ -63,9 +63,11 @@ function AnggotaPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const filtered = (profiles ?? []).filter((p: any) =>
-    !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.nim?.includes(search),
-  );
+  const filtered = (profiles ?? [])
+    .filter((p: any) => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.nim?.includes(search))
+    .sort((a: any, b: any) => (a.status === "pending" ? -1 : 1) - (b.status === "pending" ? -1 : 1));
+
+  const pendingCount = (profiles ?? []).filter((p: any) => p.status === "pending").length;
 
   return (
     <div className="space-y-6">
