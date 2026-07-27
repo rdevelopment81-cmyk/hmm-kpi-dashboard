@@ -83,7 +83,7 @@ function AnggotaPage() {
 
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input className="pl-9" placeholder="Cari nama atau NIM..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input className="pl-9" placeholder="Cari nama atau NPM..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       <div className="grid gap-3">
@@ -111,7 +111,7 @@ function AnggotaPage() {
                 </div>
                 {isHR && (
                   <div className="grid grid-cols-2 gap-2 md:flex md:flex-nowrap">
-                    <Input placeholder="NIM" defaultValue={p.nim ?? ""} onBlur={(e) => e.target.value !== (p.nim ?? "") && updateProfile.mutate({ id: p.id, patch: { nim: e.target.value } })} className="w-full md:w-32" />
+                    <Input placeholder="NPM" defaultValue={p.nim ?? ""} onBlur={(e) => e.target.value !== (p.nim ?? "") && updateProfile.mutate({ id: p.id, patch: { nim: e.target.value } })} className="w-full md:w-32" />
                     <Input placeholder="Jabatan" defaultValue={p.jabatan ?? ""} onBlur={(e) => e.target.value !== (p.jabatan ?? "") && updateProfile.mutate({ id: p.id, patch: { jabatan: e.target.value } })} className="w-full md:w-36" />
                     <Select value={p.division_id ?? ""} onValueChange={(v) => updateProfile.mutate({ id: p.id, patch: { division_id: v } })}>
                       <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="Divisi" /></SelectTrigger>
