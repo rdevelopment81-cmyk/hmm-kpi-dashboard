@@ -71,9 +71,14 @@ function AnggotaPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Manajemen Anggota</h1>
-        <p className="text-sm text-muted-foreground">Kelola profil, role, divisi, dan kartu RFID anggota.</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Manajemen Anggota</h1>
+          <p className="text-sm text-muted-foreground">Verifikasi pendaftar baru, kelola profil, role, divisi, dan kartu RFID.</p>
+        </div>
+        {isHR && pendingCount > 0 && (
+          <Badge variant="destructive" className="gap-1">{pendingCount} menunggu verifikasi</Badge>
+        )}
       </div>
 
       <div className="relative">
