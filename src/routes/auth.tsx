@@ -26,7 +26,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [nim, setNim] = useState("");
+  const [nim, setNim] = useState(""); // This is internally still 'nim' for database compatibility but user sees 'NPM'
   const [divisionId, setDivisionId] = useState<string>("");
 
   const { data: divisions } = useQuery({
@@ -109,7 +109,7 @@ function AuthPage() {
                 <form onSubmit={signUp} className="space-y-3 pt-4">
                   <div><Label>Nama lengkap</Label><Input required value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>NIM</Label><Input value={nim} onChange={(e) => setNim(e.target.value)} /></div>
+                    <div><Label>NPM</Label><Input value={nim} onChange={(e) => setNim(e.target.value)} /></div>
                     <div>
                       <Label>Divisi</Label>
                       <Select value={divisionId} onValueChange={setDivisionId}>
