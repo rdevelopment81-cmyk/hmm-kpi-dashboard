@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { CreditCard, ScanLine, Search } from "lucide-react";
+import { CreditCard, ScanLine, Search, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/anggota")({
   component: AnggotaPage,
