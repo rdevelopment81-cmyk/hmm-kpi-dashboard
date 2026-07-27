@@ -26,6 +26,13 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [nim, setNim] = useState("");
+  const [divisionId, setDivisionId] = useState<string>("");
+
+  const { data: divisions } = useQuery({
+    queryKey: ["divisions-public"],
+    queryFn: async () => (await supabase.from("divisions").select("id,name,code").order("name")).data ?? [],
+  });
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -45,18 +52,19 @@ function AuthPage() {
 
   async function signUp(e: React.FormEvent) {
     e.preventDefault();
+    if (!divisionId) { toast.error("Pilih divisi terlebih dahulu"); return; }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: fullName },
+        data: { full_name: fullName, nim, division_id: divisionId },
       },
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Akun dibuat. Silakan masuk.");
+    toast.success("Akun dibuat. Menunggu verifikasi HR Admin.");
   }
 
   return (
