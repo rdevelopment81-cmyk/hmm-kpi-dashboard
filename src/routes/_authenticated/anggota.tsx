@@ -110,27 +110,31 @@ function AnggotaPage() {
                   </div>
                 </div>
                 {isHR && (
-                  <div className="grid grid-cols-2 gap-2 md:flex md:flex-nowrap">
-                    <Input placeholder="NPM" defaultValue={p.nim ?? ""} onBlur={(e) => e.target.value !== (p.nim ?? "") && updateProfile.mutate({ id: p.id, patch: { nim: e.target.value } })} className="w-full md:w-32" />
-                    <Input placeholder="Jabatan" defaultValue={p.jabatan ?? ""} onBlur={(e) => e.target.value !== (p.jabatan ?? "") && updateProfile.mutate({ id: p.id, patch: { jabatan: e.target.value } })} className="w-full md:w-36" />
+                  <div className="flex flex-wrap gap-2 md:justify-end">
+                    <Input placeholder="NPM" defaultValue={p.nim ?? ""} onBlur={(e) => e.target.value !== (p.nim ?? "") && updateProfile.mutate({ id: p.id, patch: { nim: e.target.value } })} className="w-[calc(50%-0.25rem)] md:w-32" />
+                    <Input placeholder="Jabatan" defaultValue={p.jabatan ?? ""} onBlur={(e) => e.target.value !== (p.jabatan ?? "") && updateProfile.mutate({ id: p.id, patch: { jabatan: e.target.value } })} className="w-[calc(50%-0.25rem)] md:w-36" />
                     <Select value={p.division_id ?? ""} onValueChange={(v) => updateProfile.mutate({ id: p.id, patch: { division_id: v } })}>
-                      <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="Divisi" /></SelectTrigger>
+                      <SelectTrigger className="w-[calc(50%-0.25rem)] md:w-40"><SelectValue placeholder="Divisi" /></SelectTrigger>
                       <SelectContent>{(divisions ?? []).map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
                     </Select>
                     <Select value={currentRole} onValueChange={(v) => setRole.mutate({ userId: p.id, role: v, divisionId: v === "kadiv" ? p.division_id : null })}>
-                      <SelectTrigger className="w-full md:w-36"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-[calc(50%-0.25rem)] md:w-36"><SelectValue /></SelectTrigger>
                       <SelectContent>{ROLES.map((r) => <SelectItem key={r.v} value={r.v}>{r.l}</SelectItem>)}</SelectContent>
                     </Select>
-                    <Button variant="outline" size="sm" onClick={() => setRegTarget({ id: p.id, name: p.full_name })}>
-                      <ScanLine className="mr-1 h-4 w-4" /> Kartu
+                    <Button variant="secondary" size="sm" className="w-full md:w-auto" onClick={() => setRegTarget({ id: p.id, name: p.full_name })}>
+                      <ScanLine className="mr-1 h-4 w-4" /> {p.id_kartu ? "Ganti Kartu RFID" : "Daftarkan Kartu RFID"}
                     </Button>
                     {isPending && (
-                      <Button size="sm" onClick={() => updateProfile.mutate({ id: p.id, patch: { status: "aktif" } })}>
+                      <Button size="sm" className="w-full md:w-auto" onClick={() => updateProfile.mutate({ id: p.id, patch: { status: "aktif" } })}>
                         <CheckCircle2 className="mr-1 h-4 w-4" /> Aktifkan
                       </Button>
                     )}
                   </div>
                 )}
+                {!isHR && (
+                  <p className="text-xs text-muted-foreground md:text-right">Hanya HR Admin yang dapat mengubah data & mendaftarkan kartu.</p>
+                )}
+
               </CardContent>
             </Card>
           );
