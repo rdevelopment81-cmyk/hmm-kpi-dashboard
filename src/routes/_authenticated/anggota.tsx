@@ -38,9 +38,20 @@ function AnggotaPage() {
     queryFn: async () => (await supabase.from("divisions").select("*").order("name")).data ?? [],
   });
 
-  const { data: profiles } = useQuery({
+  const { data: profiles, error: profilesError } = useQuery({
     queryKey: ["profiles-list"],
-    queryFn: async () => (await supabase.from("profiles").select("*, divisions(name,code), user_roles(role)").order("full_name")).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*, divisions(name,code)")
+        .order("full_name");
+      if (error) throw error;
+      const { data: roles, error: rolesError } = await supabase.from("user_roles").select("user_id, role");
+      if (rolesError) throw rolesError;
+      const roleMap = new Map<string, string>();
+      (roles ?? []).forEach((r: any) => { if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, r.role); });
+      return (data ?? []).map((p: any) => ({ ...p, role: roleMap.get(p.id) ?? "anggota" }));
+    },
   });
 
   const updateProfile = useMutation({
@@ -86,9 +97,14 @@ function AnggotaPage() {
         <Input className="pl-9" placeholder="Cari nama atau NPM..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
+      {profilesError && (
+        <Card className="border-destructive"><CardContent className="p-4 text-sm text-destructive">Gagal memuat anggota: {(profilesError as any).message}</CardContent></Card>
+      )}
+
       <div className="grid gap-3">
+
         {filtered.map((p: any) => {
-          const currentRole = p.user_roles?.[0]?.role ?? "anggota";
+          const currentRole = p.role ?? "anggota";
           const isPending = p.status === "pending";
           return (
             <Card key={p.id} className={isPending ? "border-destructive/50" : undefined}>
