@@ -99,7 +99,7 @@ function AnggotaPage() {
 
       <div className="grid gap-3">
         {filtered.map((p: any) => {
-          const currentRole = p.user_roles?.[0]?.role ?? "anggota";
+          const currentRole = p.role ?? "anggota";
           const isPending = p.status === "pending";
           return (
             <Card key={p.id} className={isPending ? "border-destructive/50" : undefined}>
