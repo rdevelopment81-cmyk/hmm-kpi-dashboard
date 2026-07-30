@@ -97,7 +97,12 @@ function AnggotaPage() {
         <Input className="pl-9" placeholder="Cari nama atau NPM..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
+      {profilesError && (
+        <Card className="border-destructive"><CardContent className="p-4 text-sm text-destructive">Gagal memuat anggota: {(profilesError as any).message}</CardContent></Card>
+      )}
+
       <div className="grid gap-3">
+
         {filtered.map((p: any) => {
           const currentRole = p.role ?? "anggota";
           const isPending = p.status === "pending";
