@@ -9,13 +9,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, Calendar } from "lucide-react";
+import { Plus, Trash2, Calendar, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/meetings")({
   component: MeetingsPage,
   head: () => ({ meta: [{ title: "Rapat — HMM FEB UNPAK" }] }),
 });
+
+interface Meeting {
+  id: string;
+  title: string;
+  meeting_date: string;
+  start_time: string;
+  grace_minutes: number;
+  division_id: string | null;
+  divisions: { code: string; name: string } | null;
+  attendance: { count: number }[];
+}
+
 
 function MeetingsPage() {
   const { data: user } = useCurrentUser();
