@@ -9,17 +9,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, Calendar } from "lucide-react";
+import { Plus, Trash2, Calendar, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/meetings")({
   component: MeetingsPage,
   head: () => ({ meta: [{ title: "Rapat — HMM FEB UNPAK" }] }),
 });
 
+interface Meeting {
+  id: string;
+  title: string;
+  meeting_date: string;
+  start_time: string;
+  grace_minutes: number;
+  division_id: string | null;
+  divisions: { code: string; name: string } | null;
+  attendance: { count: number }[];
+}
+
+
 function MeetingsPage() {
   const { data: user } = useCurrentUser();
   const qc = useQueryClient();
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
 
   const { data: meetings } = useQuery({
     queryKey: ["meetings"],
@@ -47,7 +62,7 @@ function MeetingsPage() {
 
       <div className="grid gap-3">
         {(meetings ?? []).map((m: any) => (
-          <Card key={m.id}>
+          <Card key={m.id} className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => setSelectedMeeting(m)}>
             <CardContent className="flex flex-col items-start gap-3 p-5 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary/10 text-primary"><Calendar className="h-5 w-5" /></div>
@@ -58,8 +73,11 @@ function MeetingsPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Hadir: <b>{m.attendance?.[0]?.count ?? 0}</b></span>
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-primary" onClick={() => setSelectedMeeting(m)}>
+                  <Users className="h-4 w-4" />
+                  Hadir: <b>{m.attendance?.[0]?.count ?? 0}</b>
+                </Button>
                 {canCreate && (
                   <Button variant="ghost" size="sm" onClick={() => del.mutate(m.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
@@ -73,9 +91,76 @@ function MeetingsPage() {
           <Card><CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada rapat.</CardContent></Card>
         )}
       </div>
+
+      {selectedMeeting && (
+        <AttendanceDialog meeting={selectedMeeting} onClose={() => setSelectedMeeting(null)} />
+      )}
     </div>
   );
 }
+
+function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () => void }) {
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["attendance", meeting.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("*, profiles:profile_id(full_name, avatar_url, division_id, divisions(name))")
+        .eq("meeting_id", meeting.id)
+        .order("tap_time", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!meeting.id,
+  });
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Daftar Kehadiran</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="rounded-lg border bg-muted/30 p-4">
+            <p className="font-semibold">{meeting.title}</p>
+            <p className="text-sm text-muted-foreground">
+              {meeting.meeting_date} · {meeting.start_time?.slice(0, 5)} · {meeting.divisions ? meeting.divisions.name : "Umum"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Total hadir: <b>{rows?.length ?? 0}</b></p>
+          </div>
+
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Memuat kehadiran...</p>
+          ) : (rows ?? []).length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground">Belum ada kehadiran untuk rapat ini.</p>
+          ) : (
+            <div className="grid gap-2 max-h-[60vh] overflow-y-auto pr-1">
+              {(rows ?? []).map((r: any) => (
+                <div key={r.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={r.profiles?.avatar_url ?? undefined} />
+                    <AvatarFallback>{(r.profiles?.full_name ?? "??").slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{r.profiles?.full_name ?? "-"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {r.profiles?.divisions?.name ?? "Belum ada divisi"} · {new Date(r.tap_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                  <Badge variant={r.status === "telat" ? "destructive" : "default"}>
+                    {r.status === "telat" ? "TELAT" : "HADIR"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <DialogFooter><Button onClick={onClose}>Tutup</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; defaultDivisionId: string | null }) {
   const qc = useQueryClient();
