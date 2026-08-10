@@ -21,7 +21,7 @@ INSERT INTO public.divisions (name, code) VALUES
   ('Research & Development','RND'),
   ('Academic','ACADEMIC'),
   ('Public Relations','PR'),
-  ('Media & Publication','MEDIA'),
+  ('Media & Publication','MEDPUB'),
   ('Entrepreneurship','ENTRE'),
   ('Community Development','COMDEV'),
   ('Sport & Art','SPORT');

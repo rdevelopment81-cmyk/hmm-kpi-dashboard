@@ -11,6 +11,7 @@ import {
   FileBarChart,
   LogOut,
   Loader2,
+  Network,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,8 +37,9 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: () => true },
-  { to: "/absensi", label: "Absensi RFID", icon: ScanLine, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
-  { to: "/meetings", label: "Rapat", icon: CalendarDays, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
+  { to: "/struktur", label: "Struktur Organisasi", icon: Network, show: () => true },
+  { to: "/absensi", label: "Absensi", icon: ScanLine, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
+  { to: "/meetings", label: "Rapat/Kegiatan", icon: CalendarDays, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
   { to: "/jobdesk", label: "Jobdesk", icon: ClipboardList, show: () => true },
   { to: "/anggota", label: "Anggota", icon: Users, show: (r) => r.includes("hr_admin") || r.includes("bph") },
   { to: "/rekap", label: "Rekap KPI", icon: FileBarChart, show: (r) => r.includes("hr_admin") || r.includes("bph") },
@@ -78,10 +80,10 @@ function AuthedLayout() {
       <aside className="hidden w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-sidebar-primary font-bold text-sidebar-primary-foreground">H</div>
+            <img src="/hmm-logo.png" alt="Logo HMM FEB UNPAK" className="h-10 w-auto max-h-10 object-contain rounded-md shrink-0 shadow-sm" />
             <div>
               <p className="text-sm font-semibold">HMM FEB UNPAK</p>
-              <p className="text-xs opacity-70">Sistem KPI</p>
+              <p className="text-xs opacity-70">Himpunan Mahasiswa Manajemen</p>
             </div>
           </div>
         </div>
@@ -126,7 +128,7 @@ function AuthedLayout() {
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border/60 bg-card px-6 py-3 md:hidden">
           <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-md bg-primary font-bold text-primary-foreground">H</div>
+            <img src="/hmm-logo.png" alt="Logo HMM" className="h-8 w-auto max-h-8 object-contain rounded-md shrink-0 shadow-sm" />
             <span className="text-sm font-semibold">HMM KPI</span>
           </div>
           <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4" /></Button>

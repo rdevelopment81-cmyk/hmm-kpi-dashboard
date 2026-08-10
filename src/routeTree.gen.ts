@@ -9,54 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRekapRouteImport } from './routes/_authenticated/rekap'
-import { Route as AuthenticatedPengaturanRouteImport } from './routes/_authenticated/pengaturan'
-import { Route as AuthenticatedMeetingsRouteImport } from './routes/_authenticated/meetings'
-import { Route as AuthenticatedJobdeskRouteImport } from './routes/_authenticated/jobdesk'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedAnggotaRouteImport } from './routes/_authenticated/anggota'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAbsensiRouteImport } from './routes/_authenticated/absensi'
+import { Route as AuthenticatedAnggotaRouteImport } from './routes/_authenticated/anggota'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedJobdeskRouteImport } from './routes/_authenticated/jobdesk'
+import { Route as AuthenticatedMeetingsRouteImport } from './routes/_authenticated/meetings'
+import { Route as AuthenticatedPengaturanRouteImport } from './routes/_authenticated/pengaturan'
+import { Route as AuthenticatedRekapRouteImport } from './routes/_authenticated/rekap'
+import { Route as AuthenticatedStrukturRouteImport } from './routes/_authenticated/struktur'
 
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRekapRoute = AuthenticatedRekapRouteImport.update({
-  id: '/rekap',
-  path: '/rekap',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPengaturanRoute = AuthenticatedPengaturanRouteImport.update({
-  id: '/pengaturan',
-  path: '/pengaturan',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMeetingsRoute = AuthenticatedMeetingsRouteImport.update({
-  id: '/meetings',
-  path: '/meetings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedJobdeskRoute = AuthenticatedJobdeskRouteImport.update({
-  id: '/jobdesk',
-  path: '/jobdesk',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedAbsensiRoute = AuthenticatedAbsensiRouteImport.update({
+  id: '/absensi',
+  path: '/absensi',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAnggotaRoute = AuthenticatedAnggotaRouteImport.update({
@@ -64,9 +45,34 @@ const AuthenticatedAnggotaRoute = AuthenticatedAnggotaRouteImport.update({
   path: '/anggota',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAbsensiRoute = AuthenticatedAbsensiRouteImport.update({
-  id: '/absensi',
-  path: '/absensi',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJobdeskRoute = AuthenticatedJobdeskRouteImport.update({
+  id: '/jobdesk',
+  path: '/jobdesk',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMeetingsRoute = AuthenticatedMeetingsRouteImport.update({
+  id: '/meetings',
+  path: '/meetings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPengaturanRoute = AuthenticatedPengaturanRouteImport.update({
+  id: '/pengaturan',
+  path: '/pengaturan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRekapRoute = AuthenticatedRekapRouteImport.update({
+  id: '/rekap',
+  path: '/rekap',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStrukturRoute = AuthenticatedStrukturRouteImport.update({
+  id: '/struktur',
+  path: '/struktur',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/meetings': typeof AuthenticatedMeetingsRoute
   '/pengaturan': typeof AuthenticatedPengaturanRoute
   '/rekap': typeof AuthenticatedRekapRoute
+  '/struktur': typeof AuthenticatedStrukturRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/meetings': typeof AuthenticatedMeetingsRoute
   '/pengaturan': typeof AuthenticatedPengaturanRoute
   '/rekap': typeof AuthenticatedRekapRoute
+  '/struktur': typeof AuthenticatedStrukturRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/meetings': typeof AuthenticatedMeetingsRoute
   '/_authenticated/pengaturan': typeof AuthenticatedPengaturanRoute
   '/_authenticated/rekap': typeof AuthenticatedRekapRoute
+  '/_authenticated/struktur': typeof AuthenticatedStrukturRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/meetings'
     | '/pengaturan'
     | '/rekap'
+    | '/struktur'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/meetings'
     | '/pengaturan'
     | '/rekap'
+    | '/struktur'
   id:
     | '__root__'
     | '/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/meetings'
     | '/_authenticated/pengaturan'
     | '/_authenticated/rekap'
+    | '/_authenticated/struktur'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,11 +162,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -164,46 +176,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/rekap': {
-      id: '/_authenticated/rekap'
-      path: '/rekap'
-      fullPath: '/rekap'
-      preLoaderRoute: typeof AuthenticatedRekapRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/pengaturan': {
-      id: '/_authenticated/pengaturan'
-      path: '/pengaturan'
-      fullPath: '/pengaturan'
-      preLoaderRoute: typeof AuthenticatedPengaturanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/meetings': {
-      id: '/_authenticated/meetings'
-      path: '/meetings'
-      fullPath: '/meetings'
-      preLoaderRoute: typeof AuthenticatedMeetingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobdesk': {
-      id: '/_authenticated/jobdesk'
-      path: '/jobdesk'
-      fullPath: '/jobdesk'
-      preLoaderRoute: typeof AuthenticatedJobdeskRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+    '/_authenticated/absensi': {
+      id: '/_authenticated/absensi'
+      path: '/absensi'
+      fullPath: '/absensi'
+      preLoaderRoute: typeof AuthenticatedAbsensiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/anggota': {
@@ -213,11 +197,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnggotaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/absensi': {
-      id: '/_authenticated/absensi'
-      path: '/absensi'
-      fullPath: '/absensi'
-      preLoaderRoute: typeof AuthenticatedAbsensiRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jobdesk': {
+      id: '/_authenticated/jobdesk'
+      path: '/jobdesk'
+      fullPath: '/jobdesk'
+      preLoaderRoute: typeof AuthenticatedJobdeskRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/meetings': {
+      id: '/_authenticated/meetings'
+      path: '/meetings'
+      fullPath: '/meetings'
+      preLoaderRoute: typeof AuthenticatedMeetingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pengaturan': {
+      id: '/_authenticated/pengaturan'
+      path: '/pengaturan'
+      fullPath: '/pengaturan'
+      preLoaderRoute: typeof AuthenticatedPengaturanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rekap': {
+      id: '/_authenticated/rekap'
+      path: '/rekap'
+      fullPath: '/rekap'
+      preLoaderRoute: typeof AuthenticatedRekapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/struktur': {
+      id: '/_authenticated/struktur'
+      path: '/struktur'
+      fullPath: '/struktur'
+      preLoaderRoute: typeof AuthenticatedStrukturRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -231,6 +250,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMeetingsRoute: typeof AuthenticatedMeetingsRoute
   AuthenticatedPengaturanRoute: typeof AuthenticatedPengaturanRoute
   AuthenticatedRekapRoute: typeof AuthenticatedRekapRoute
+  AuthenticatedStrukturRoute: typeof AuthenticatedStrukturRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -241,6 +261,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMeetingsRoute: AuthenticatedMeetingsRoute,
   AuthenticatedPengaturanRoute: AuthenticatedPengaturanRoute,
   AuthenticatedRekapRoute: AuthenticatedRekapRoute,
+  AuthenticatedStrukturRoute: AuthenticatedStrukturRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -254,3 +275,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -71,26 +71,26 @@ function AuthPage() {
     <div className="grid min-h-screen md:grid-cols-2">
       <div className="hidden bg-gradient-to-br from-primary to-primary/70 p-12 text-primary-foreground md:flex md:flex-col md:justify-between">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary-foreground/15 font-bold">H</div>
+          <img src="/hmm-logo.png" alt="Logo HMM FEB UNPAK" className="h-12 w-auto max-h-12 object-contain rounded-md shrink-0 shadow-md bg-white/10 p-1 backdrop-blur" />
           <div>
             <p className="font-semibold">HMM FEB UNPAK</p>
-            <p className="text-xs opacity-80">Sistem KPI</p>
+            <p className="text-xs opacity-80">Himpunan Mahasiswa Manajemen</p>
           </div>
         </div>
         <div>
           <h2 className="text-3xl font-bold">Selamat datang kembali.</h2>
           <p className="mt-3 max-w-sm text-primary-foreground/80">
-            Pantau kinerja, kelola absensi rapat via RFID, dan verifikasi jobdesk dari satu dashboard.
+            Absensi, Verifikasi jobdesk dan dashboard KPI
           </p>
         </div>
-        <p className="text-xs opacity-70">Himpunan Mahasiswa Manajemen • Fakultas Ekonomi & Bisnis</p>
+        <p className="text-xs opacity-70">Himpunan Mahasiswa Manajemen • Fakultas Ekonomi & Bisnis • Universitas Pakuan</p>
       </div>
 
       <div className="flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Akun HMM</CardTitle>
-            <CardDescription>Masuk atau daftar dengan email kampus.</CardDescription>
+            <CardDescription>Masuk atau daftar dengan email</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin">

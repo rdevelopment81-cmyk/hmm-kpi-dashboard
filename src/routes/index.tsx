@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Users, ClipboardCheck, BarChart3 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
       { title: "KPI HMM FEB UNPAK — Sistem Kinerja Anggota" },
-      { name: "description", content: "Platform pengelolaan KPI, absensi RFID, dan jobdesk untuk Himpunan Mahasiswa Manajemen FEB UNPAK." },
+      { name: "description", content: "Platform pengelolaan KPI, absensi, dan jobdesk untuk Himpunan Mahasiswa Manajemen FEB UNPAK." },
     ],
   }),
 });
@@ -18,10 +17,10 @@ function Landing() {
       <header className="border-b border-border/60 bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary font-bold text-primary-foreground">H</div>
+            <img src="/hmm-logo.png" alt="Logo HMM FEB UNPAK" className="h-10 w-auto max-h-10 object-contain rounded-md shrink-0 shadow-sm" />
             <div>
               <p className="text-sm font-semibold leading-tight">HMM FEB UNPAK</p>
-              <p className="text-xs text-muted-foreground">Sistem KPI Anggota</p>
+              <p className="text-xs text-muted-foreground">Himpunan Mahasiswa Manajemen</p>
             </div>
           </div>
           <Link to="/auth">
@@ -37,30 +36,17 @@ function Landing() {
               Himpunan Mahasiswa Manajemen FEB UNPAK
             </span>
             <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
-              Kelola kinerja anggota HMM dengan cara modern.
+              Key Performance Indikator
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Absensi rapat via kartu RFID, verifikasi jobdesk, dan dashboard KPI real-time — semua di satu tempat.
+              Absensi, Verifikasi jobdesk dan dashboard KPI
             </p>
             <div className="mt-6 flex gap-3">
               <Link to="/auth"><Button size="lg">Mulai sekarang</Button></Link>
             </div>
           </div>
-          <div className="rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-8 text-primary-foreground shadow-xl">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                { icon: ShieldCheck, label: "Absensi RFID", desc: "Tap kartu, tercatat otomatis" },
-                { icon: ClipboardCheck, label: "Jobdesk", desc: "Upload & approval terstruktur" },
-                { icon: BarChart3, label: "Dashboard KPI", desc: "Skor per anggota & divisi" },
-                { icon: Users, label: "8 Divisi", desc: "Terintegrasi penuh" },
-              ].map((f) => (
-                <div key={f.label} className="rounded-xl bg-primary-foreground/10 p-4 backdrop-blur">
-                  <f.icon className="h-6 w-6 text-accent" />
-                  <p className="mt-2 font-semibold">{f.label}</p>
-                  <p className="text-sm opacity-80">{f.desc}</p>
-                </div>
-              ))}
-            </div>
+          <div className="overflow-hidden rounded-2xl shadow-xl border border-border/50">
+            <img src="/hero-image.jpg" alt="Foto Bersama Anggota HMM FEB UNPAK" className="h-full w-full object-cover" />
           </div>
         </section>
       </main>

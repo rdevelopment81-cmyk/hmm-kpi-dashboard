@@ -39,8 +39,8 @@ function MeetingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Rapat</h1>
-          <p className="text-sm text-muted-foreground">Kelola sesi rapat dan pantau kehadiran.</p>
+          <h1 className="text-2xl font-bold">Rapat/Kegiatan</h1>
+          <p className="text-sm text-muted-foreground">Kelola sesi kegiatan dan pantau kehadiran.</p>
         </div>
         {canCreate && <CreateMeetingDialog userId={user.userId} defaultDivisionId={user.roles.includes("kadiv") ? user.profile?.division_id ?? null : null} />}
       </div>
@@ -70,7 +70,7 @@ function MeetingsPage() {
           </Card>
         ))}
         {(meetings ?? []).length === 0 && (
-          <Card><CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada rapat.</CardContent></Card>
+          <Card><CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada kegiatan</CardContent></Card>
         )}
       </div>
     </div>
@@ -105,7 +105,7 @@ function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; de
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button><Plus className="mr-1 h-4 w-4" /> Rapat baru</Button></DialogTrigger>
+      <DialogTrigger asChild><Button><Plus className="mr-1 h-4 w-4" /> Kegiatan baru</Button></DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Buat Rapat</DialogTitle></DialogHeader>
         <div className="space-y-3">

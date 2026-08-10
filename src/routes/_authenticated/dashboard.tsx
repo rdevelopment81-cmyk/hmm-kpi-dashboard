@@ -48,8 +48,8 @@ function PersonalKPI({ userId }: { userId: string }) {
 
   const cards = [
     { label: "Skor KPI", value: `${kpi.kpi_score}`, icon: TrendingUp, tone: "bg-primary text-primary-foreground" },
-    { label: "Kehadiran", value: `${kpi.attendance_pct}%`, sub: `${kpi.attended}/${kpi.total_meetings} rapat`, icon: ScanLine, tone: "bg-accent text-accent-foreground" },
-    { label: "Jobdesk selesai", value: `${kpi.jobdesk_pct}%`, sub: `${kpi.approved_jobs}/${kpi.total_jobs} tugas`, icon: ClipboardCheck, tone: "bg-secondary text-secondary-foreground" },
+    { label: "Kehadiran", value: `${kpi.attendance_pct}%`, sub: `${kpi.attended}/${kpi.total_meetings} kegiatan`, icon: ScanLine, tone: "bg-accent text-accent-foreground" },
+    { label: "Jobdesk selesai", value: `${kpi.jobdesk_pct}%`, sub: `${kpi.approved_jobs}/${kpi.total_jobs} jobdesk`, icon: ClipboardCheck, tone: "bg-secondary text-secondary-foreground" },
   ];
 
   return (

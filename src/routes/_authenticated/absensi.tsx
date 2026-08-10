@@ -19,7 +19,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/absensi")({
   component: AbsensiPage,
-  head: () => ({ meta: [{ title: "Absensi RFID — HMM FEB UNPAK" }] }),
+  head: () => ({ meta: [{ title: "Absensi — HMM FEB UNPAK" }] }),
 });
 
 interface LastTap {
@@ -87,16 +87,16 @@ function AbsensiPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Absensi Rapat via RFID</h1>
-        <p className="text-sm text-muted-foreground">Tap kartu anggota pada USB reader. Data tersimpan otomatis.</p>
+        <h1 className="text-2xl font-bold">Absensi Rapat/Kegiatan</h1>
+        <p className="text-sm text-muted-foreground">Tap kartu pada USB reader. Data tersimpan otomatis.</p>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Pilih sesi rapat</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Pilih sesi Kegiatan</CardTitle></CardHeader>
         <CardContent>
-          <Label>Rapat aktif</Label>
+          <Label>Kegiatan aktif</Label>
           <Select value={meetingId} onValueChange={setMeetingId}>
-            <SelectTrigger className="mt-2"><SelectValue placeholder="Pilih rapat..." /></SelectTrigger>
+            <SelectTrigger className="mt-2"><SelectValue placeholder="Pilih kegiatan..." /></SelectTrigger>
             <SelectContent>
               {(meetings ?? []).map((m: any) => (
                 <SelectItem key={m.id} value={m.id}>

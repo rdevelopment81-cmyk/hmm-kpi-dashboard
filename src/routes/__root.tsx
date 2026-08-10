@@ -55,7 +55,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "KPI HMM FEB UNPAK" },
       { name: "description", content: "Sistem KPI Himpunan Mahasiswa Manajemen FEB Universitas Pakuan" },
       { property: "og:title", content: "KPI HMM FEB UNPAK" },
-      { property: "og:description", content: "Sistem pengelolaan KPI, absensi RFID, dan jobdesk HMM FEB UNPAK." },
+      { property: "og:description", content: "Sistem pengelolaan KPI, absensi, dan jobdesk HMM FEB UNPAK." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -65,7 +65,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
