@@ -63,7 +63,8 @@ function MeetingsPage() {
 
   if (!user) return null;
   const canCreate = user.roles.some((r) => r === "hr_admin" || r === "kadiv");
-
+  const isHr = user.roles.includes("hr_admin");
+  const isKadiv = user.roles.includes("kadiv");
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -81,7 +82,9 @@ function MeetingsPage() {
       </div>
 
       <div className="grid gap-3">
-        {(meetings ?? []).map((m: any) => (
+        {(meetings ?? []).map((m: any) => {
+          const canManageThis = isHr || (isKadiv && (!m.division_id || m.division_id === user.profile?.division_id));
+          return (
           <Card key={m.id} className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => setSelectedMeeting(m)}>
             <CardContent className="flex flex-col items-start gap-3 p-5 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
@@ -113,7 +116,7 @@ function MeetingsPage() {
                   <Users className="h-4 w-4" />
                   Hadir: <b>{m.attendance?.[0]?.count ?? 0}</b>
                 </Button>
-                {canCreate && (
+                {canManageThis && (
                   <Button variant="ghost" size="sm" onClick={() => del.mutate(m.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -121,7 +124,7 @@ function MeetingsPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )})}
         {(meetings ?? []).length === 0 && (
           <Card>
             <CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada kegiatan</CardContent>
