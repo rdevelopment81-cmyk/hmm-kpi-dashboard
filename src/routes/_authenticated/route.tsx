@@ -41,9 +41,9 @@ const NAV: NavItem[] = [
   { to: "/prokers", label: "Program Kerja", icon: FolderKanban, show: () => true },
   { to: "/struktur", label: "Struktur Organisasi", icon: Network, show: () => true },
   { to: "/absensi", label: "Absensi", icon: ScanLine, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
-  { to: "/meetings", label: "Rapat/Kegiatan", icon: CalendarDays, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
+  { to: "/meetings", label: "Rapat/Kegiatan", icon: CalendarDays, show: () => true },
   { to: "/jobdesk", label: "Jobdesk", icon: ClipboardList, show: () => true },
-  { to: "/anggota", label: "Anggota", icon: Users, show: (r) => r.includes("hr_admin") || r.includes("bph") },
+  { to: "/anggota", label: "Anggota", icon: Users, show: (r) => r.includes("hr_admin") || r.includes("bph") || r.includes("kadiv") },
   { to: "/rekap", label: "Rekap KPI", icon: FileBarChart, show: (r) => r.includes("hr_admin") || r.includes("bph") },
   { to: "/pengaturan", label: "Pengaturan KPI", icon: Settings, show: (r) => r.includes("hr_admin") },
 ];
