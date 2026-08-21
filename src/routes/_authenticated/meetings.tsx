@@ -74,6 +74,7 @@ function MeetingsPage() {
         {canCreate && (
           <CreateMeetingDialog
             userId={user.userId}
+            userRoles={user.roles}
             defaultDivisionId={user.roles.includes("kadiv") ? user.profile?.division_id ?? null : null}
           />
         )}
@@ -202,8 +203,9 @@ function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () 
   );
 }
 
-function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; defaultDivisionId: string | null }) {
+function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId: string; userRoles: string[]; defaultDivisionId: string | null }) {
   const qc = useQueryClient();
+  const isHr = userRoles.includes("hr_admin");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -293,7 +295,9 @@ function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; de
             <Select value={divisionId} onValueChange={(v) => setDivisionId(v)}>
               <SelectTrigger><SelectValue placeholder="Umum (semua divisi)" /></SelectTrigger>
               <SelectContent>
-                {(divisions ?? []).map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                {(divisions ?? [])
+                  .filter((d: any) => isHr || d.id === defaultDivisionId)
+                  .map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
