@@ -57,13 +57,6 @@ export function useCurrentUser() {
         roles.push("hr_admin");
       }
       
-      if ((isRND || roles.includes("hr_admin")) && (!profile?.jabatan || profile?.jabatan.toLowerCase().includes("anggota"))) {
-        supabase.from("profiles").update({ jabatan: "Kepala Divisi" }).eq("id", uid).then(() => {});
-        supabase.from("user_roles").upsert({ user_id: uid, role: "kadiv", division_id: profile?.division_id ?? undefined }, { onConflict: "user_id,role" }).then(() => {});
-        if (profile) (profile as any).jabatan = "Kepala Divisi";
-        if (!roles.includes("kadiv")) roles.push("kadiv");
-        if (!roles.includes("hr_admin") && isRND) roles.push("hr_admin");
-      }
 
       roles.sort((a, b) => {
         const order: Record<string, number> = { kadiv: 1, bph: 2, hr_admin: 3, anggota: 4 };
