@@ -18,8 +18,10 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedJobdeskRouteImport } from './routes/_authenticated/jobdesk'
 import { Route as AuthenticatedMeetingsRouteImport } from './routes/_authenticated/meetings'
 import { Route as AuthenticatedPengaturanRouteImport } from './routes/_authenticated/pengaturan'
+import { Route as AuthenticatedProkersRouteImport } from './routes/_authenticated/prokers'
 import { Route as AuthenticatedRekapRouteImport } from './routes/_authenticated/rekap'
 import { Route as AuthenticatedStrukturRouteImport } from './routes/_authenticated/struktur'
+import { Route as AuthenticatedProkersProkerIdRouteImport } from './routes/_authenticated/prokers.$prokerId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -65,6 +67,11 @@ const AuthenticatedPengaturanRoute = AuthenticatedPengaturanRouteImport.update({
   path: '/pengaturan',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProkersRoute = AuthenticatedProkersRouteImport.update({
+  id: '/prokers',
+  path: '/prokers',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRekapRoute = AuthenticatedRekapRouteImport.update({
   id: '/rekap',
   path: '/rekap',
@@ -75,6 +82,12 @@ const AuthenticatedStrukturRoute = AuthenticatedStrukturRouteImport.update({
   path: '/struktur',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProkersProkerIdRoute =
+  AuthenticatedProkersProkerIdRouteImport.update({
+    id: '/$prokerId',
+    path: '/$prokerId',
+    getParentRoute: () => AuthenticatedProkersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -85,8 +98,10 @@ export interface FileRoutesByFullPath {
   '/jobdesk': typeof AuthenticatedJobdeskRoute
   '/meetings': typeof AuthenticatedMeetingsRoute
   '/pengaturan': typeof AuthenticatedPengaturanRoute
+  '/prokers': typeof AuthenticatedProkersRouteWithChildren
   '/rekap': typeof AuthenticatedRekapRoute
   '/struktur': typeof AuthenticatedStrukturRoute
+  '/prokers/$prokerId': typeof AuthenticatedProkersProkerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,8 +112,10 @@ export interface FileRoutesByTo {
   '/jobdesk': typeof AuthenticatedJobdeskRoute
   '/meetings': typeof AuthenticatedMeetingsRoute
   '/pengaturan': typeof AuthenticatedPengaturanRoute
+  '/prokers': typeof AuthenticatedProkersRouteWithChildren
   '/rekap': typeof AuthenticatedRekapRoute
   '/struktur': typeof AuthenticatedStrukturRoute
+  '/prokers/$prokerId': typeof AuthenticatedProkersProkerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,8 +128,10 @@ export interface FileRoutesById {
   '/_authenticated/jobdesk': typeof AuthenticatedJobdeskRoute
   '/_authenticated/meetings': typeof AuthenticatedMeetingsRoute
   '/_authenticated/pengaturan': typeof AuthenticatedPengaturanRoute
+  '/_authenticated/prokers': typeof AuthenticatedProkersRouteWithChildren
   '/_authenticated/rekap': typeof AuthenticatedRekapRoute
   '/_authenticated/struktur': typeof AuthenticatedStrukturRoute
+  '/_authenticated/prokers/$prokerId': typeof AuthenticatedProkersProkerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,8 +144,10 @@ export interface FileRouteTypes {
     | '/jobdesk'
     | '/meetings'
     | '/pengaturan'
+    | '/prokers'
     | '/rekap'
     | '/struktur'
+    | '/prokers/$prokerId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -137,8 +158,10 @@ export interface FileRouteTypes {
     | '/jobdesk'
     | '/meetings'
     | '/pengaturan'
+    | '/prokers'
     | '/rekap'
     | '/struktur'
+    | '/prokers/$prokerId'
   id:
     | '__root__'
     | '/'
@@ -150,8 +173,10 @@ export interface FileRouteTypes {
     | '/_authenticated/jobdesk'
     | '/_authenticated/meetings'
     | '/_authenticated/pengaturan'
+    | '/_authenticated/prokers'
     | '/_authenticated/rekap'
     | '/_authenticated/struktur'
+    | '/_authenticated/prokers/$prokerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -225,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPengaturanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/prokers': {
+      id: '/_authenticated/prokers'
+      path: '/prokers'
+      fullPath: '/prokers'
+      preLoaderRoute: typeof AuthenticatedProkersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/rekap': {
       id: '/_authenticated/rekap'
       path: '/rekap'
@@ -239,8 +271,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStrukturRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/prokers/$prokerId': {
+      id: '/_authenticated/prokers/$prokerId'
+      path: '/$prokerId'
+      fullPath: '/prokers/$prokerId'
+      preLoaderRoute: typeof AuthenticatedProkersProkerIdRouteImport
+      parentRoute: typeof AuthenticatedProkersRoute
+    }
   }
 }
+
+interface AuthenticatedProkersRouteChildren {
+  AuthenticatedProkersProkerIdRoute: typeof AuthenticatedProkersProkerIdRoute
+}
+
+const AuthenticatedProkersRouteChildren: AuthenticatedProkersRouteChildren = {
+  AuthenticatedProkersProkerIdRoute: AuthenticatedProkersProkerIdRoute,
+}
+
+const AuthenticatedProkersRouteWithChildren =
+  AuthenticatedProkersRoute._addFileChildren(AuthenticatedProkersRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAbsensiRoute: typeof AuthenticatedAbsensiRoute
@@ -249,6 +299,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJobdeskRoute: typeof AuthenticatedJobdeskRoute
   AuthenticatedMeetingsRoute: typeof AuthenticatedMeetingsRoute
   AuthenticatedPengaturanRoute: typeof AuthenticatedPengaturanRoute
+  AuthenticatedProkersRoute: typeof AuthenticatedProkersRouteWithChildren
   AuthenticatedRekapRoute: typeof AuthenticatedRekapRoute
   AuthenticatedStrukturRoute: typeof AuthenticatedStrukturRoute
 }
@@ -260,6 +311,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJobdeskRoute: AuthenticatedJobdeskRoute,
   AuthenticatedMeetingsRoute: AuthenticatedMeetingsRoute,
   AuthenticatedPengaturanRoute: AuthenticatedPengaturanRoute,
+  AuthenticatedProkersRoute: AuthenticatedProkersRouteWithChildren,
   AuthenticatedRekapRoute: AuthenticatedRekapRoute,
   AuthenticatedStrukturRoute: AuthenticatedStrukturRoute,
 }

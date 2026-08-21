@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,19 +20,41 @@ export const Route = createFileRoute("/auth")({
   }),
 });
 
+const POSISI_LIST = [
+  { id: "anggota", label: "Anggota Divisi", role: "anggota" },
+  { id: "kadiv", label: "Kepala Divisi", role: "kadiv" },
+  { id: "Ketua Umum", label: "Ketua Umum", role: "bph" },
+  { id: "Wakil ketua umum 1", label: "Wakil ketua umum 1", role: "bph" },
+  { id: "Wakil ketua umum 2", label: "Wakil ketua umum 2", role: "bph" },
+  { id: "Sekertaris Umum 1", label: "Sekertaris Umum 1", role: "bph" },
+  { id: "Sekertaris Umum 2", label: "Sekertaris Umum 2", role: "bph" },
+  { id: "Bendahara Umum 1", label: "Bendahara Umum 1", role: "bph" },
+  { id: "Bendahara Umum 2", label: "Bendahara Umum 2", role: "bph" },
+];
+
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [nim, setNim] = useState(""); // This is internally still 'nim' for database compatibility but user sees 'NPM'
+  const [nim, setNim] = useState("");
   const [divisionId, setDivisionId] = useState<string>("");
+  const [posisiKey, setPosisiKey] = useState<string>("anggota");
 
-  const { data: divisions } = useQuery({
+  const { data: rawDivisions } = useQuery({
     queryKey: ["divisions-public"],
     queryFn: async () => (await supabase.from("divisions").select("id,name,code").order("name")).data ?? [],
   });
+
+  const divisions = useMemo(() => {
+    const list = [...(rawDivisions ?? [])];
+    const hasBPH = list.some((d: any) => d.code === "BPH" || d.name.toLowerCase().includes("bph"));
+    if (!hasBPH) {
+      list.unshift({ id: "bph-virtual-id", name: "Badan Pengurus Harian (BPH)", code: "BPH" });
+    }
+    return list;
+  }, [rawDivisions]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -54,18 +76,46 @@ function AuthPage() {
     e.preventDefault();
     if (!divisionId) { toast.error("Pilih divisi terlebih dahulu"); return; }
     setLoading(true);
+
+    const selectedPos = POSISI_LIST.find((p) => p.id === posisiKey) ?? POSISI_LIST[0];
+
+    let targetDivId = divisionId;
+    if (targetDivId === "bph-virtual-id") {
+      const { data: bphDiv } = await supabase.from("divisions").select("id").eq("code", "BPH").maybeSingle();
+      if (bphDiv) targetDivId = bphDiv.id;
+      else targetDivId = "";
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: fullName, nim, division_id: divisionId },
+        data: {
+          full_name: fullName,
+          nim,
+          division_id: targetDivId && targetDivId !== "bph-virtual-id" ? targetDivId : null,
+          requested_role: selectedPos.role,
+          jabatan: selectedPos.label,
+        },
       },
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Akun dibuat. Menunggu verifikasi HR Admin.");
+    if (selectedPos.role === "kadiv" || selectedPos.role === "bph" || selectedPos.role === "hr_admin") {
+      toast.success("Akun berhasil dibuat dan langsung AKTIF! Silakan masuk.");
+    } else {
+      toast.success("Akun dibuat. Menunggu verifikasi HR Admin / Kadiv R&D.");
+    }
   }
+
+  const handlePosisiChange = (val: string) => {
+    setPosisiKey(val);
+    const pos = POSISI_LIST.find((p) => p.id === val);
+    if (pos && pos.role === "bph") {
+      const bphDiv = divisions.find((d: any) => d.code === "BPH" || d.name.toLowerCase().includes("bph"));
+      if (bphDiv) setDivisionId(bphDiv.id);
+    }
+  };
 
   return (
     <div className="grid min-h-screen md:grid-cols-2">
@@ -109,19 +159,32 @@ function AuthPage() {
                 <form onSubmit={signUp} className="space-y-3 pt-4">
                   <div><Label>Nama lengkap</Label><Input required value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>NPM</Label><Input value={nim} onChange={(e) => setNim(e.target.value)} /></div>
+                    <div><Label>NPM</Label><Input value={nim} onChange={(e) => setNim(e.target.value)} placeholder="0211..." /></div>
                     <div>
-                      <Label>Divisi</Label>
-                      <Select value={divisionId} onValueChange={setDivisionId}>
-                        <SelectTrigger><SelectValue placeholder="Pilih divisi" /></SelectTrigger>
+                      <Label>Posisi / Peran</Label>
+                      <Select value={posisiKey} onValueChange={handlePosisiChange}>
+                        <SelectTrigger><SelectValue placeholder="Pilih posisi" /></SelectTrigger>
                         <SelectContent>
-                          {(divisions ?? []).map((d: any) => (
-                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                          {POSISI_LIST.map((item) => (
+                            <SelectItem key={item.id} value={item.id}>{item.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
+
+                  <div>
+                    <Label>Divisi</Label>
+                    <Select value={divisionId} onValueChange={setDivisionId}>
+                      <SelectTrigger><SelectValue placeholder="Pilih divisi" /></SelectTrigger>
+                      <SelectContent>
+                        {divisions.map((d: any) => (
+                          <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                   <div><Label>Password</Label><Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
                   <Button type="submit" className="w-full" disabled={loading}>{loading ? "Memproses..." : "Daftar"}</Button>

@@ -172,6 +172,8 @@ export type Database = {
           grace_minutes: number
           id: string
           meeting_date: string
+          meeting_type: string
+          proker_id: string | null
           start_time: string
           title: string
         }
@@ -182,6 +184,8 @@ export type Database = {
           grace_minutes?: number
           id?: string
           meeting_date: string
+          meeting_type?: string
+          proker_id?: string | null
           start_time?: string
           title: string
         }
@@ -192,12 +196,101 @@ export type Database = {
           grace_minutes?: number
           id?: string
           meeting_date?: string
+          meeting_type?: string
+          proker_id?: string | null
           start_time?: string
           title?: string
         }
         Relationships: [
           {
             foreignKeyName: "meetings_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_proker_id_fkey"
+            columns: ["proker_id"]
+            isOneToOne: false
+            referencedRelation: "prokers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proker_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          proker_id: string
+          role_type: Database["public"]["Enums"]["proker_role_type"]
+          seksi_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          proker_id: string
+          role_type: Database["public"]["Enums"]["proker_role_type"]
+          seksi_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          proker_id?: string
+          role_type?: Database["public"]["Enums"]["proker_role_type"]
+          seksi_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proker_assignments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proker_assignments_proker_id_fkey"
+            columns: ["proker_id"]
+            isOneToOne: false
+            referencedRelation: "prokers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prokers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          division_id: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["proker_status"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          division_id?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["proker_status"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          division_id?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["proker_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prokers_division_id_fkey"
             columns: ["division_id"]
             isOneToOne: false
             referencedRelation: "divisions"
@@ -302,6 +395,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ketuplak: {
+        Args: { _proker_id: string; _user_id: string }
+        Returns: boolean
+      }
       record_attendance: {
         Args: { _id_kartu: string; _meeting_id: string }
         Returns: Json
@@ -316,6 +413,8 @@ export type Database = {
       attendance_status: "hadir" | "telat"
       jobdesk_status: "diajukan" | "disetujui" | "ditolak"
       profile_status: "pending" | "aktif"
+      proker_status: "perencanaan" | "rapat_1" | "rapat_2" | "rapat_3" | "pelaksanaan" | "selesai"
+      proker_role_type: "ketua_pelaksana" | "sekretaris" | "bendahara" | "koordinator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -447,6 +546,8 @@ export const Constants = {
       attendance_status: ["hadir", "telat"],
       jobdesk_status: ["diajukan", "disetujui", "ditolak"],
       profile_status: ["pending", "aktif"],
+      proker_status: ["perencanaan", "rapat_1", "rapat_2", "rapat_3", "pelaksanaan", "selesai"],
+      proker_role_type: ["ketua_pelaksana", "sekretaris", "bendahara", "koordinator"],
     },
   },
 } as const

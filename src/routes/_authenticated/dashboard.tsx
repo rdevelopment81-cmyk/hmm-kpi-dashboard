@@ -1,12 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ScanLine, ClipboardCheck, TrendingUp, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScanLine, ClipboardCheck, TrendingUp, Users, FolderKanban, ArrowRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { STATUS_MAP } from "@/routes/_authenticated/prokers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -28,6 +30,8 @@ function Dashboard() {
       </div>
 
       <PersonalKPI userId={user.userId} />
+
+      {isStaff && <ProkerSummary />}
 
       {(isStaff || isKadiv) && <DivisionOverview isStaff={isStaff} />}
     </div>
@@ -136,3 +140,74 @@ function DivisionOverview({ isStaff }: { isStaff: boolean }) {
     </Card>
   );
 }
+
+function ProkerSummary() {
+  const { data: prokerCounts, isLoading } = useQuery({
+    queryKey: ["prokerCounts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("prokers").select("status");
+      if (error) throw error;
+      const counts: Record<string, number> = {
+        perencanaan: 0,
+        rapat_1: 0,
+        rapat_2: 0,
+        rapat_3: 0,
+        pelaksanaan: 0,
+        selesai: 0,
+      };
+      (data ?? []).forEach((p: any) => {
+        if (p.status && counts[p.status] !== undefined) {
+          counts[p.status]++;
+        }
+      });
+      return { counts, total: (data ?? []).length };
+    },
+  });
+
+  const { counts = {}, total = 0 } = prokerCounts ?? {};
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <FolderKanban className="h-5 w-5 text-primary" /> Ringkasan Status Program Kerja
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Pantau status perkembangan seluruh proker organisasi.
+          </CardDescription>
+        </div>
+        <Button variant="outline" size="sm" asChild className="gap-1 text-xs">
+          <Link to="/prokers">
+            Lihat Semua <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-xs text-muted-foreground">Memuat statistik proker...</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+            {Object.entries(STATUS_MAP).map(([key, item]) => {
+              const count = counts[key] ?? 0;
+              return (
+                <div key={key} className="flex flex-col justify-between rounded-lg border p-3 bg-card">
+                  <span className={`inline-flex self-start items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.className}`}>
+                    {item.label}
+                  </span>
+                  <div className="mt-3">
+                    <p className="text-2xl font-bold">{count}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {total > 0 ? Math.round((count / total) * 100) : 0}% dari {total} proker
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+

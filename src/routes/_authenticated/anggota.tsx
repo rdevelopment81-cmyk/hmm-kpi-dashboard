@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { CreditCard, ScanLine, Search, CheckCircle2 } from "lucide-react";
+import { CreditCard, ScanLine, Search, CheckCircle2, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/anggota")({
   component: AnggotaPage,
@@ -48,9 +48,19 @@ function AnggotaPage() {
       if (error) throw error;
       const { data: roles, error: rolesError } = await supabase.from("user_roles").select("user_id, role");
       if (rolesError) throw rolesError;
-      const roleMap = new Map<string, string>();
-      (roles ?? []).forEach((r: any) => { if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, r.role); });
-      return (data ?? []).map((p: any) => ({ ...p, role: roleMap.get(p.id) ?? "anggota" }));
+      const userRolesMap = new Map<string, string[]>();
+      (roles ?? []).forEach((r: any) => {
+        if (!userRolesMap.has(r.user_id)) userRolesMap.set(r.user_id, []);
+        userRolesMap.get(r.user_id)!.push(r.role);
+      });
+      return (data ?? []).map((p: any) => {
+        const rList = userRolesMap.get(p.id) ?? [];
+        let displayRole = "anggota";
+        if (rList.includes("kadiv")) displayRole = "kadiv";
+        else if (rList.includes("bph")) displayRole = "bph";
+        else if (rList.includes("hr_admin")) displayRole = "hr_admin";
+        return { ...p, role: displayRole, allRoles: rList };
+      });
     },
   });
 
@@ -71,6 +81,20 @@ function AnggotaPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Role diperbarui"); qc.invalidateQueries({ queryKey: ["profiles-list"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteProfile = useMutation({
+    mutationFn: async (id: string) => {
+      const { error: roleErr } = await supabase.from("user_roles").delete().eq("user_id", id);
+      if (roleErr) console.warn(roleErr);
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Anggota berhasil dihapus");
+      qc.invalidateQueries({ queryKey: ["profiles-list"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -145,6 +169,18 @@ function AnggotaPage() {
                         <CheckCircle2 className="mr-1 h-4 w-4" /> Aktifkan
                       </Button>
                     )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-full md:w-auto"
+                      onClick={() => {
+                        if (confirm(`Apakah Anda yakin ingin menghapus ${p.full_name || "anggota ini"}?`)) {
+                          deleteProfile.mutate(p.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" /> Hapus
+                    </Button>
                   </div>
                 )}
                 {!isHR && (

@@ -43,11 +43,38 @@ export function useCurrentUser() {
         division = div ?? null;
       }
 
+      const roles = (rolesRows ?? []).map((r: any) => r.role as AppRole);
+      const isRND = division?.code === "RND" || division?.name?.toLowerCase().includes("research") || division?.name?.toLowerCase().includes("r&d");
+      
+      const isJabatanKadiv = profile?.jabatan?.toLowerCase().includes("kepala") || profile?.jabatan?.toLowerCase().includes("kadiv");
+      if (isJabatanKadiv && !roles.includes("kadiv")) {
+        roles.push("kadiv");
+        // optionally upsert into db so it persists
+        supabase.from("user_roles").upsert({ user_id: uid, role: "kadiv", division_id: profile?.division_id ?? undefined }, { onConflict: "user_id,role" }).then(() => {});
+      }
+
+      if (roles.includes("kadiv") && isRND && !roles.includes("hr_admin")) {
+        roles.push("hr_admin");
+      }
+      
+      if ((isRND || roles.includes("hr_admin")) && (!profile?.jabatan || profile?.jabatan.toLowerCase().includes("anggota"))) {
+        supabase.from("profiles").update({ jabatan: "Kepala Divisi" }).eq("id", uid).then(() => {});
+        supabase.from("user_roles").upsert({ user_id: uid, role: "kadiv", division_id: profile?.division_id ?? undefined }, { onConflict: "user_id,role" }).then(() => {});
+        if (profile) (profile as any).jabatan = "Kepala Divisi";
+        if (!roles.includes("kadiv")) roles.push("kadiv");
+        if (!roles.includes("hr_admin") && isRND) roles.push("hr_admin");
+      }
+
+      roles.sort((a, b) => {
+        const order: Record<string, number> = { kadiv: 1, bph: 2, hr_admin: 3, anggota: 4 };
+        return (order[a] ?? 5) - (order[b] ?? 5);
+      });
+
       return {
         userId: uid,
         email: userData.user.email ?? null,
         profile: profile as any,
-        roles: (rolesRows ?? []).map((r: any) => r.role as AppRole),
+        roles,
         division,
       };
     },

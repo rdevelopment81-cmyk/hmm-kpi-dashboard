@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, Calendar, Users } from "lucide-react";
+import { Plus, Trash2, Calendar, Users, FolderKanban } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/meetings")({
   component: MeetingsPage,
@@ -26,10 +26,12 @@ interface Meeting {
   start_time: string;
   grace_minutes: number;
   division_id: string | null;
+  proker_id: string | null;
+  meeting_type: string;
   divisions: { code: string; name: string } | null;
+  prokers: { id: string; name: string } | null;
   attendance: { count: number }[];
 }
-
 
 function MeetingsPage() {
   const { data: user } = useCurrentUser();
@@ -38,12 +40,24 @@ function MeetingsPage() {
 
   const { data: meetings } = useQuery({
     queryKey: ["meetings"],
-    queryFn: async () => (await supabase.from("meetings").select("*, divisions(code,name), attendance(count)").order("meeting_date", { ascending: false })).data ?? [],
+    queryFn: async () =>
+      (
+        await supabase
+          .from("meetings")
+          .select("*, divisions(code,name), prokers(id, name), attendance(count)")
+          .order("meeting_date", { ascending: false })
+      ).data ?? [],
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.from("meetings").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { toast.success("Rapat dihapus"); qc.invalidateQueries({ queryKey: ["meetings"] }); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("meetings").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Rapat dihapus");
+      qc.invalidateQueries({ queryKey: ["meetings"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -57,7 +71,12 @@ function MeetingsPage() {
           <h1 className="text-2xl font-bold">Rapat/Kegiatan</h1>
           <p className="text-sm text-muted-foreground">Kelola sesi kegiatan dan pantau kehadiran.</p>
         </div>
-        {canCreate && <CreateMeetingDialog userId={user.userId} defaultDivisionId={user.roles.includes("kadiv") ? user.profile?.division_id ?? null : null} />}
+        {canCreate && (
+          <CreateMeetingDialog
+            userId={user.userId}
+            defaultDivisionId={user.roles.includes("kadiv") ? user.profile?.division_id ?? null : null}
+          />
+        )}
       </div>
 
       <div className="grid gap-3">
@@ -65,11 +84,26 @@ function MeetingsPage() {
           <Card key={m.id} className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => setSelectedMeeting(m)}>
             <CardContent className="flex flex-col items-start gap-3 p-5 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary/10 text-primary"><Calendar className="h-5 w-5" /></div>
+                <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <Calendar className="h-5 w-5" />
+                </div>
                 <div>
-                  <p className="font-semibold">{m.title}</p>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <p className="font-semibold">{m.title}</p>
+                    {m.prokers && (
+                      <Badge variant="secondary" className="gap-1 text-[11px]">
+                        <FolderKanban className="h-3 w-3" />
+                        {m.prokers.name}
+                      </Badge>
+                    )}
+                    {m.meeting_type && m.meeting_type !== "umum" && (
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {m.meeting_type.replace("_", " ")}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    {m.meeting_date} · {m.start_time?.slice(0, 5)} · {m.divisions ? m.divisions.name : "Umum"}
+                    {m.meeting_date} · {m.start_time?.slice(0, 5)} WIB · {m.divisions ? m.divisions.name : "Umum"}
                   </p>
                 </div>
               </div>
@@ -88,7 +122,9 @@ function MeetingsPage() {
           </Card>
         ))}
         {(meetings ?? []).length === 0 && (
-          <Card><CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada kegiatan</CardContent></Card>
+          <Card>
+            <CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada kegiatan</CardContent>
+          </Card>
         )}
       </div>
 
@@ -124,8 +160,13 @@ function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () 
           <div className="rounded-lg border bg-muted/30 p-4">
             <p className="font-semibold">{meeting.title}</p>
             <p className="text-sm text-muted-foreground">
-              {meeting.meeting_date} · {meeting.start_time?.slice(0, 5)} · {meeting.divisions ? meeting.divisions.name : "Umum"}
+              {meeting.meeting_date} · {meeting.start_time?.slice(0, 5)} WIB · {meeting.divisions ? meeting.divisions.name : "Umum"}
             </p>
+            {meeting.prokers && (
+              <p className="text-xs text-primary font-medium mt-1">
+                Program Kerja: {meeting.prokers.name} ({meeting.meeting_type?.replace("_", " ")})
+              </p>
+            )}
             <p className="mt-1 text-sm text-muted-foreground">Total hadir: <b>{rows?.length ?? 0}</b></p>
           </div>
 
@@ -161,7 +202,6 @@ function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () 
   );
 }
 
-
 function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; defaultDivisionId: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -169,37 +209,85 @@ function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; de
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState("19:00");
   const [grace, setGrace] = useState(15);
-  const [divisionId, setDivisionId] = useState<string | "">(defaultDivisionId ?? "");
+  const [divisionId, setDivisionId] = useState<string>(defaultDivisionId ?? "");
+  const [prokerId, setProkerId] = useState<string>("none");
+  const [meetingType, setMeetingType] = useState<string>("umum");
 
   const { data: divisions } = useQuery({
     queryKey: ["divisions"],
     queryFn: async () => (await supabase.from("divisions").select("*").order("name")).data ?? [],
   });
 
+  const { data: prokers } = useQuery({
+    queryKey: ["prokers"],
+    queryFn: async () => (await supabase.from("prokers").select("id, name, division_id").order("name")).data ?? [],
+  });
+
   async function submit() {
-    if (!title) { toast.error("Judul wajib"); return; }
+    if (!title) { toast.error("Judul wajib diisi"); return; }
+    const selectedProkerId = prokerId === "none" ? null : prokerId;
     const { error } = await supabase.from("meetings").insert({
-      title, meeting_date: date, start_time: time, grace_minutes: grace,
-      division_id: divisionId || null, created_by: userId,
+      title,
+      meeting_date: date,
+      start_time: time,
+      grace_minutes: grace,
+      division_id: divisionId || null,
+      proker_id: selectedProkerId,
+      meeting_type: meetingType,
+      created_by: userId,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Rapat dibuat");
-    setOpen(false); setTitle("");
+    toast.success("Rapat berhasil dibuat");
+    setOpen(false);
+    setTitle("");
+    setProkerId("none");
+    setMeetingType("umum");
     qc.invalidateQueries({ queryKey: ["meetings"] });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button><Plus className="mr-1 h-4 w-4" /> Kegiatan baru</Button></DialogTrigger>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Buat Rapat</DialogTitle></DialogHeader>
+      <DialogTrigger asChild>
+        <Button><Plus className="mr-1 h-4 w-4" /> Kegiatan baru</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Buat Rapat / Kegiatan</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <div><Label>Judul</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+          <div><Label>Judul Kegiatan *</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
           <div className="grid grid-cols-2 gap-2">
-            <div><Label>Tanggal</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-            <div><Label>Mulai</Label><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
+            <div><Label>Tanggal *</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+            <div><Label>Mulai *</Label><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
           </div>
           <div><Label>Toleransi telat (menit)</Label><Input type="number" value={grace} onChange={(e) => setGrace(Number(e.target.value))} /></div>
+          <div>
+            <Label>Terkait Program Kerja (Opsional)</Label>
+            <Select value={prokerId} onValueChange={(v) => setProkerId(v)}>
+              <SelectTrigger><SelectValue placeholder="Bukan Rapat Proker (Umum)" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Tidak Ada (Rapat Rutin / Umum)</SelectItem>
+                {(prokers ?? []).map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {prokerId !== "none" && (
+            <div>
+              <Label>Jenis Rapat Proker</Label>
+              <Select value={meetingType} onValueChange={setMeetingType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rapat_1">Rapat 1 (Perencanaan)</SelectItem>
+                  <SelectItem value="rapat_2">Rapat 2 (Progress Check)</SelectItem>
+                  <SelectItem value="rapat_3">Rapat 3 (Final Prep)</SelectItem>
+                  <SelectItem value="pelaksanaan">Pelaksanaan (Hari H)</SelectItem>
+                  <SelectItem value="umum">Rapat Umum Proker</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div>
             <Label>Divisi (kosong = rapat umum)</Label>
             <Select value={divisionId} onValueChange={(v) => setDivisionId(v)}>
@@ -215,3 +303,4 @@ function CreateMeetingDialog({ userId, defaultDivisionId }: { userId: string; de
     </Dialog>
   );
 }
+

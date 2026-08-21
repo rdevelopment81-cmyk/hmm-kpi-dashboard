@@ -76,7 +76,7 @@ function StrukturOrganisasiPage() {
     queryKey: ["orgStructure"],
     queryFn: async () => {
       const [{ data: profiles }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("*"),
+        supabase.from("profiles").select("*, divisions(name,code)"),
         supabase.from("user_roles").select("*"),
       ]);
 
@@ -92,17 +92,26 @@ function StrukturOrganisasiPage() {
       const divMap: Record<string, { kadiv: any[]; anggota: any[] }> = {};
 
       (divisions ?? []).forEach((d) => {
-        divMap[d.id] = { kadiv: [], anggota: [] };
+        const entry = { kadiv: [], anggota: [] };
+        divMap[d.id] = entry;
+        if (d.code) divMap[d.code.toUpperCase()] = entry;
       });
 
       profiles.forEach((p: any) => {
         const uRoles = userRoles[p.id] || [];
-        if (uRoles.includes("bph")) {
+        const pDivCode = p.divisions?.code?.toUpperCase();
+        const targetMap = (p.division_id && divMap[p.division_id]) || (pDivCode && divMap[pDivCode]);
+
+        const isBphRole = uRoles.includes("bph") || p.jabatan?.toLowerCase().includes("ketua") || p.jabatan?.toLowerCase().includes("sekretaris") || p.jabatan?.toLowerCase().includes("bendahara");
+        const isRND = pDivCode === "RND" || p.divisions?.name?.toLowerCase().includes("research");
+        const isKadivRole = uRoles.includes("kadiv") || p.jabatan?.toLowerCase().includes("kepala") || p.jabatan?.toLowerCase().includes("kadiv") || (uRoles.includes("hr_admin") && isRND);
+
+        if (isBphRole) {
           bph.push(p);
-        } else if (uRoles.includes("kadiv") && p.division_id && divMap[p.division_id]) {
-          divMap[p.division_id].kadiv.push(p);
-        } else if (p.division_id && divMap[p.division_id]) {
-          divMap[p.division_id].anggota.push(p);
+        } else if (isKadivRole && targetMap) {
+          targetMap.kadiv.push(p);
+        } else if (targetMap) {
+          targetMap.anggota.push(p);
         }
       });
 
@@ -242,7 +251,12 @@ function StrukturOrganisasiPage() {
                       {div.kadiv.length > 0 ? (
                         div.kadiv.map((k: any) => (
                           <div key={k.id} className="relative flex flex-col items-center">
-                            <OrgNode name={k.full_name} jabatan={k.jabatan || `Kepala Divisi ${div.code}`} avatarUrl={k.avatar_url} isKadiv />
+                            <OrgNode
+                              name={k.full_name}
+                              jabatan={k.jabatan && !k.jabatan.toLowerCase().includes("anggota") ? k.jabatan : `Kepala Divisi ${div.code}`}
+                              avatarUrl={k.avatar_url}
+                              isKadiv
+                            />
                             <div className="absolute -bottom-8 h-8 w-[2px] bg-border" />
                           </div>
                         ))

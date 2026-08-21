@@ -12,6 +12,7 @@ import {
   LogOut,
   Loader2,
   Network,
+  FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +38,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: () => true },
+  { to: "/prokers", label: "Program Kerja", icon: FolderKanban, show: () => true },
   { to: "/struktur", label: "Struktur Organisasi", icon: Network, show: () => true },
   { to: "/absensi", label: "Absensi", icon: ScanLine, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
   { to: "/meetings", label: "Rapat/Kegiatan", icon: CalendarDays, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
@@ -74,6 +76,10 @@ function AuthedLayout() {
 
   const visibleNav = NAV.filter((n) => n.show(user.roles));
   const primaryRole = user.roles[0] ?? "anggota";
+  const displayRoleLabel =
+    user.profile?.jabatan && !user.profile.jabatan.toLowerCase().includes("anggota")
+      ? user.profile.jabatan
+      : ROLE_LABEL[primaryRole] ?? "Kepala Divisi";
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -116,7 +122,7 @@ function AuthedLayout() {
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{user.profile?.full_name || user.email}</p>
-              <p className="text-xs opacity-70">{ROLE_LABEL[primaryRole]}{user.division ? ` · ${user.division.code}` : ""}</p>
+              <p className="text-xs opacity-70">{displayRoleLabel}{user.division ? ` · ${user.division.code}` : ""}</p>
             </div>
           </div>
           <Button variant="ghost" onClick={signOut} className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
