@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +62,8 @@ export const STATUS_MAP: Record<string, { label: string; className: string }> = 
 function ProkersPage() {
   const { data: user } = useCurrentUser();
   const qc = useQueryClient();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isDetail = pathname.length > "/prokers/".length && pathname.startsWith("/prokers/");
 
   const { data: prokers, isLoading } = useQuery({
     queryKey: ["prokers"],
@@ -92,6 +94,10 @@ function ProkersPage() {
   const isBphOrHr = user.roles.some((r) => r === "hr_admin" || r === "bph");
   const isKadiv = user.roles.includes("kadiv");
   const canCreate = isBphOrHr || isKadiv;
+
+  if (isDetail) {
+    return <Outlet />;
+  }
 
   return (
     <div className="space-y-6">
