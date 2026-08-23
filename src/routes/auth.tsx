@@ -7,7 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -15,7 +21,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Masuk — KPI HMM FEB UNPAK" },
-      { name: "description", content: "Masuk ke sistem KPI Himpunan Mahasiswa Manajemen FEB UNPAK." },
+      {
+        name: "description",
+        content: "Masuk ke sistem KPI Himpunan Mahasiswa Manajemen FEB UNPAK.",
+      },
     ],
   }),
 });
@@ -44,7 +53,8 @@ function AuthPage() {
 
   const { data: rawDivisions } = useQuery({
     queryKey: ["divisions-public"],
-    queryFn: async () => (await supabase.from("divisions").select("id,name,code").order("name")).data ?? [],
+    queryFn: async () =>
+      (await supabase.from("divisions").select("id,name,code").order("name")).data ?? [],
   });
 
   const divisions = useMemo(() => {
@@ -67,21 +77,31 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Berhasil masuk");
     navigate({ to: "/dashboard", replace: true });
   }
 
   async function signUp(e: React.FormEvent) {
     e.preventDefault();
-    if (!divisionId) { toast.error("Pilih divisi terlebih dahulu"); return; }
+    if (!divisionId) {
+      toast.error("Pilih divisi terlebih dahulu");
+      return;
+    }
     setLoading(true);
 
     const selectedPos = POSISI_LIST.find((p) => p.id === posisiKey) ?? POSISI_LIST[0];
 
     let targetDivId = divisionId;
     if (targetDivId === "bph-virtual-id") {
-      const { data: bphDiv } = await supabase.from("divisions").select("id").eq("code", "BPH").maybeSingle();
+      const { data: bphDiv } = await supabase
+        .from("divisions")
+        .select("id")
+        .eq("code", "BPH")
+        .maybeSingle();
       if (bphDiv) targetDivId = bphDiv.id;
       else targetDivId = "";
     }
@@ -101,7 +121,11 @@ function AuthPage() {
       },
     });
     setLoading(false);
-    if (selectedPos.role === "kadiv" || selectedPos.role === "bph" || selectedPos.role === "hr_admin") {
+    if (
+      selectedPos.role === "kadiv" ||
+      selectedPos.role === "bph" ||
+      selectedPos.role === "hr_admin"
+    ) {
       toast.success("Akun berhasil dibuat dan langsung AKTIF! Silakan masuk.");
     } else {
       toast.success("Akun dibuat. Menunggu verifikasi HR Admin / Kadiv R&D.");
@@ -112,7 +136,9 @@ function AuthPage() {
     setPosisiKey(val);
     const pos = POSISI_LIST.find((p) => p.id === val);
     if (pos && pos.role === "bph") {
-      const bphDiv = divisions.find((d: any) => d.code === "BPH" || d.name.toLowerCase().includes("bph"));
+      const bphDiv = divisions.find(
+        (d: any) => d.code === "BPH" || d.name.toLowerCase().includes("bph"),
+      );
       if (bphDiv) setDivisionId(bphDiv.id);
     }
   };
@@ -121,7 +147,11 @@ function AuthPage() {
     <div className="grid min-h-screen md:grid-cols-2">
       <div className="hidden bg-gradient-to-br from-primary to-primary/70 p-12 text-primary-foreground md:flex md:flex-col md:justify-between">
         <div className="flex items-center gap-3">
-          <img src="/hmm-logo.png" alt="Logo HMM FEB UNPAK" className="h-12 w-auto max-h-12 object-contain rounded-md shrink-0 shadow-md bg-white/10 p-1 backdrop-blur" />
+          <img
+            src="/hmm-logo.png"
+            alt="Logo HMM FEB UNPAK"
+            className="h-12 w-auto max-h-12 object-contain rounded-md shrink-0 shadow-md bg-white/10 p-1 backdrop-blur"
+          />
           <div>
             <p className="font-semibold">HMM FEB UNPAK</p>
             <p className="text-xs opacity-80">Himpunan Mahasiswa Manajemen</p>
@@ -133,7 +163,9 @@ function AuthPage() {
             Absensi, Verifikasi jobdesk dan dashboard KPI
           </p>
         </div>
-        <p className="text-xs opacity-70">Himpunan Mahasiswa Manajemen • Fakultas Ekonomi & Bisnis • Universitas Pakuan</p>
+        <p className="text-xs opacity-70">
+          Himpunan Mahasiswa Manajemen • Fakultas Ekonomi & Bisnis • Universitas Pakuan
+        </p>
       </div>
 
       <div className="flex items-center justify-center p-6">
@@ -150,23 +182,59 @@ function AuthPage() {
               </TabsList>
               <TabsContent value="signin">
                 <form onSubmit={signIn} className="space-y-3 pt-4">
-                  <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                  <div><Label>Password</Label><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? "Memproses..." : "Masuk"}</Button>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Password</Label>
+                    <Input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Memproses..." : "Masuk"}
+                  </Button>
                 </form>
               </TabsContent>
               <TabsContent value="signup">
                 <form onSubmit={signUp} className="space-y-3 pt-4">
-                  <div><Label>Nama lengkap</Label><Input required value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
+                  <div>
+                    <Label>Nama lengkap</Label>
+                    <Input
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                    />
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label>NPM</Label><Input value={nim} onChange={(e) => setNim(e.target.value)} placeholder="0211..." /></div>
+                    <div>
+                      <Label>NPM</Label>
+                      <Input
+                        value={nim}
+                        onChange={(e) => setNim(e.target.value)}
+                        placeholder="0211..."
+                      />
+                    </div>
                     <div>
                       <Label>Posisi / Peran</Label>
                       <Select value={posisiKey} onValueChange={handlePosisiChange}>
-                        <SelectTrigger><SelectValue placeholder="Pilih posisi" /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih posisi" />
+                        </SelectTrigger>
                         <SelectContent>
                           {POSISI_LIST.map((item) => (
-                            <SelectItem key={item.id} value={item.id}>{item.label}</SelectItem>
+                            <SelectItem key={item.id} value={item.id}>
+                              {item.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -176,19 +244,45 @@ function AuthPage() {
                   <div>
                     <Label>Divisi</Label>
                     <Select value={divisionId} onValueChange={setDivisionId}>
-                      <SelectTrigger><SelectValue placeholder="Pilih divisi" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih divisi" />
+                      </SelectTrigger>
                       <SelectContent>
                         {divisions.map((d: any) => (
-                          <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                          <SelectItem key={d.id} value={d.id}>
+                            {d.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                  <div><Label>Password</Label><Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? "Memproses..." : "Daftar"}</Button>
-                  <p className="text-xs text-muted-foreground">Akun baru berstatus <b>Pending</b> sampai diverifikasi HR Admin. User pertama otomatis menjadi HR Admin.</p>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Password</Label>
+                    <Input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Memproses..." : "Daftar"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Akun baru berstatus <b>Pending</b> sampai diverifikasi HR Admin. User pertama
+                    otomatis menjadi HR Admin.
+                  </p>
                 </form>
               </TabsContent>
             </Tabs>

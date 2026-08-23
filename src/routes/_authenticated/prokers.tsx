@@ -8,8 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Trash2, FolderKanban, Users, CalendarDays, ArrowRight } from "lucide-react";
@@ -20,12 +33,30 @@ export const Route = createFileRoute("/_authenticated/prokers")({
 });
 
 export const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  perencanaan: { label: "Perencanaan", className: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200" },
-  rapat_1: { label: "Rapat 1", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200" },
-  rapat_2: { label: "Rapat 2", className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200" },
-  rapat_3: { label: "Rapat 3", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200" },
-  pelaksanaan: { label: "Pelaksanaan", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200" },
-  selesai: { label: "Selesai", className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200" },
+  perencanaan: {
+    label: "Perencanaan",
+    className: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
+  },
+  rapat_1: {
+    label: "Rapat 1",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200",
+  },
+  rapat_2: {
+    label: "Rapat 2",
+    className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200",
+  },
+  rapat_3: {
+    label: "Rapat 3",
+    className: "bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200",
+  },
+  pelaksanaan: {
+    label: "Pelaksanaan",
+    className: "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200",
+  },
+  selesai: {
+    label: "Selesai",
+    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200",
+  },
 };
 
 function ProkersPage() {
@@ -53,27 +84,29 @@ function ProkersPage() {
       toast.success("Program kerja dihapus");
       qc.invalidateQueries({ queryKey: ["prokers"] });
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (!user) return null;
 
-  const isHr = user.roles.includes("hr_admin");
+  const isBphOrHr = user.roles.some((r) => r === "hr_admin" || r === "bph");
   const isKadiv = user.roles.includes("kadiv");
-  const canCreate = isHr || isKadiv;
+  const canCreate = isBphOrHr || isKadiv;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Program Kerja (Proker)</h1>
-          <p className="text-sm text-muted-foreground">Kelola seluruh program kerja, kepanitiaan, dan rapat persiapan.</p>
+          <p className="text-sm text-muted-foreground">
+            Kelola seluruh program kerja, kepanitiaan, dan rapat persiapan.
+          </p>
         </div>
         {canCreate && (
           <CreateProkerDialog
             userId={user.userId}
             userRoles={user.roles}
-            defaultDivisionId={isKadiv ? user.profile?.division_id ?? null : null}
+            defaultDivisionId={isKadiv ? (user.profile?.division_id ?? null) : null}
           />
         )}
       </div>
@@ -85,24 +118,39 @@ function ProkersPage() {
           <CardContent className="p-12 text-center text-muted-foreground">
             <FolderKanban className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
             <p className="font-medium">Belum ada Program Kerja</p>
-            <p className="text-xs text-muted-foreground mt-1">Buat program kerja baru untuk mulai mengelola kepanitiaan.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Buat program kerja baru untuk mulai mengelola kepanitiaan.
+            </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(prokers ?? []).map((p: any) => {
+          {(prokers ?? []).map((p: {
+            id: string;
+            status: string;
+            name: string;
+            description: string | null;
+            division_id: string | null;
+            divisions: { code: string } | null;
+            proker_assignments: Array<{ count: number }>;
+          }) => {
             const statusConfig = STATUS_MAP[p.status] ?? { label: p.status, className: "" };
             const countPanitia = p.proker_assignments?.[0]?.count ?? 0;
-            const canManageThis = isHr || (isKadiv && p.division_id === user.profile?.division_id);
+            const canManageThis = isBphOrHr || (isKadiv && p.division_id === user.profile?.division_id);
 
             return (
-              <Card key={p.id} className="flex flex-col transition-all hover:shadow-md border-border/80">
+              <Card
+                key={p.id}
+                className="flex flex-col transition-all hover:shadow-md border-border/80"
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <Badge variant="outline" className="font-semibold shrink-0">
                       {p.divisions?.code ?? "Semua Divisi"}
                     </Badge>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusConfig.className}`}>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusConfig.className}`}
+                    >
                       {statusConfig.label}
                     </span>
                   </div>
@@ -167,7 +215,7 @@ function CreateProkerDialog({
   const [divisionId, setDivisionId] = useState<string>(defaultDivisionId ?? "");
   const qc = useQueryClient();
 
-  const isHr = userRoles.includes("hr_admin");
+  const isBphOrHr = userRoles.some((r) => r === "hr_admin" || r === "bph");
 
   const { data: divisions } = useQuery({
     queryKey: ["divisions"],
@@ -193,7 +241,7 @@ function CreateProkerDialog({
       setDescription("");
       qc.invalidateQueries({ queryKey: ["prokers"] });
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -228,13 +276,13 @@ function CreateProkerDialog({
 
           <div className="space-y-1.5">
             <Label htmlFor="proker-div">Divisi Penyelenggara</Label>
-            {isHr ? (
+            {isBphOrHr ? (
               <Select value={divisionId} onValueChange={setDivisionId}>
                 <SelectTrigger id="proker-div">
                   <SelectValue placeholder="Pilih Divisi" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(divisions ?? []).map((d: any) => (
+                  {(divisions ?? []).map((d: { id: string; name: string; code: string }) => (
                     <SelectItem key={d.id} value={d.id}>
                       {d.name} ({d.code})
                     </SelectItem>
@@ -243,7 +291,10 @@ function CreateProkerDialog({
               </Select>
             ) : (
               <Input
-                value={(divisions ?? []).find((d: any) => d.id === defaultDivisionId)?.name ?? "Divisi Anda"}
+                value={
+                  (divisions ?? []).find((d: { id: string }) => d.id === defaultDivisionId)?.name ??
+                  "Divisi Anda"
+                }
                 disabled
               />
             )}

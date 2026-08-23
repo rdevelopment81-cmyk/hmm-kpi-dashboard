@@ -20,7 +20,10 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <p className="mt-2 text-sm text-muted-foreground">Halaman tidak ditemukan.</p>
-        <Link to="/" className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+        <Link
+          to="/"
+          className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
           Kembali ke beranda
         </Link>
       </div>
@@ -30,14 +33,19 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
-  useEffect(() => { reportLovableError(error, { boundary: "root" }); }, [error]);
+  useEffect(() => {
+    reportLovableError(error, { boundary: "root" });
+  }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Terjadi kesalahan</h1>
         <p className="mt-2 text-sm text-muted-foreground">Coba muat ulang halaman.</p>
         <button
-          onClick={() => { router.invalidate(); reset(); }}
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
           className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
         >
           Coba lagi
@@ -53,9 +61,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "KPI HMM FEB UNPAK" },
-      { name: "description", content: "Sistem KPI Himpunan Mahasiswa Manajemen FEB Universitas Pakuan" },
+      {
+        name: "description",
+        content: "Sistem KPI Himpunan Mahasiswa Manajemen FEB Universitas Pakuan",
+      },
       { property: "og:title", content: "KPI HMM FEB UNPAK" },
-      { property: "og:description", content: "Sistem pengelolaan KPI, absensi, dan jobdesk HMM FEB UNPAK." },
+      {
+        property: "og:description",
+        content: "Sistem pengelolaan KPI, absensi, dan jobdesk HMM FEB UNPAK.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

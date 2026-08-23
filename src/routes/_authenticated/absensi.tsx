@@ -68,42 +68,72 @@ function AbsensiPage() {
     const kartu = value.trim();
     setValue("");
     inputRef.current?.focus();
-    if (!meetingId) { toast.error("Pilih rapat dulu"); return; }
-    if (!kartu) return;
-
-    const { data, error } = await supabase.rpc("record_attendance", { _meeting_id: meetingId, _id_kartu: kartu });
-    if (error) { setLast({ ok: false, message: error.message }); return; }
-    const r = data as any;
-    if (!r.ok) {
-      setLast({ ok: false, message: r.error, name: r.profile?.full_name, avatar: r.profile?.avatar_url });
+    if (!meetingId) {
+      toast.error("Pilih rapat dulu");
       return;
     }
-    setLast({ ok: true, name: r.profile.full_name, avatar: r.profile.avatar_url, status: r.status, message: "Absensi tercatat" });
+    if (!kartu) return;
+
+    const { data, error } = await supabase.rpc("record_attendance", {
+      _meeting_id: meetingId,
+      _id_kartu: kartu,
+    });
+    if (error) {
+      setLast({ ok: false, message: error.message });
+      return;
+    }
+    const r = data as any;
+    if (!r.ok) {
+      setLast({
+        ok: false,
+        message: r.error,
+        name: r.profile?.full_name,
+        avatar: r.profile?.avatar_url,
+      });
+      return;
+    }
+    setLast({
+      ok: true,
+      name: r.profile.full_name,
+      avatar: r.profile.avatar_url,
+      status: r.status,
+      message: "Absensi tercatat",
+    });
     qc.invalidateQueries({ queryKey: ["attendance"] });
   }
 
-  if (!canUse) return <p className="text-muted-foreground">Anda tidak memiliki akses ke halaman ini.</p>;
+  if (!canUse)
+    return <p className="text-muted-foreground">Anda tidak memiliki akses ke halaman ini.</p>;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Absensi Rapat/Kegiatan</h1>
-        <p className="text-sm text-muted-foreground">Tap kartu pada USB reader. Data tersimpan otomatis.</p>
+        <p className="text-sm text-muted-foreground">
+          Tap kartu pada USB reader. Data tersimpan otomatis.
+        </p>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Pilih sesi Kegiatan</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Pilih sesi Kegiatan</CardTitle>
+        </CardHeader>
         <CardContent>
           <Label>Kegiatan aktif</Label>
           <Select value={meetingId} onValueChange={setMeetingId}>
-            <SelectTrigger className="mt-2"><SelectValue placeholder="Pilih kegiatan..." /></SelectTrigger>
+            <SelectTrigger className="mt-2">
+              <SelectValue placeholder="Pilih kegiatan..." />
+            </SelectTrigger>
             <SelectContent>
               {(meetings ?? []).map((m: any) => (
                 <SelectItem key={m.id} value={m.id}>
-                  {m.title} — {m.meeting_date} {m.start_time?.slice(0, 5)}{m.divisions?.code ? ` · ${m.divisions.code}` : ""}
+                  {m.title} — {m.meeting_date} {m.start_time?.slice(0, 5)}
+                  {m.divisions?.code ? ` · ${m.divisions.code}` : ""}
                 </SelectItem>
               ))}
-              {(meetings ?? []).length === 0 && <div className="p-2 text-xs text-muted-foreground">Belum ada rapat.</div>}
+              {(meetings ?? []).length === 0 && (
+                <div className="p-2 text-xs text-muted-foreground">Belum ada rapat.</div>
+              )}
             </SelectContent>
           </Select>
         </CardContent>
@@ -120,7 +150,12 @@ function AbsensiPage() {
             disabled={!meetingId}
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTap(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleTap();
+              }
+            }}
             onBlur={() => setTimeout(() => inputRef.current?.focus(), 100)}
             placeholder={meetingId ? "Menunggu tap kartu..." : "Pilih rapat terlebih dahulu"}
             className="w-full rounded-xl border-2 border-dashed border-primary/40 bg-background px-6 py-8 text-center text-3xl font-mono tracking-widest placeholder:text-lg placeholder:tracking-normal focus:border-primary focus:outline-none disabled:opacity-50"
@@ -132,7 +167,9 @@ function AbsensiPage() {
       </Card>
 
       {last && (
-        <Card className={`border-2 ${last.ok ? "border-success" : "border-destructive"} animate-in fade-in`}>
+        <Card
+          className={`border-2 ${last.ok ? "border-success" : "border-destructive"} animate-in fade-in`}
+        >
           <CardContent className="flex items-center gap-4 p-5">
             {last.ok ? (
               <CheckCircle2 className="h-12 w-12 text-success" />
@@ -147,10 +184,15 @@ function AbsensiPage() {
             )}
             <div className="flex-1">
               <p className="text-lg font-semibold">{last.name ?? last.message}</p>
-              <p className="text-sm text-muted-foreground">{last.ok ? last.message : (last.name ? last.message : "Kartu tidak terdaftar")}</p>
+              <p className="text-sm text-muted-foreground">
+                {last.ok ? last.message : last.name ? last.message : "Kartu tidak terdaftar"}
+              </p>
             </div>
             {last.ok && last.status && (
-              <Badge variant={last.status === "telat" ? "destructive" : "default"} className="text-base">
+              <Badge
+                variant={last.status === "telat" ? "destructive" : "default"}
+                className="text-base"
+              >
                 {last.status.toUpperCase()}
               </Badge>
             )}

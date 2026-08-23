@@ -7,8 +7,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -58,7 +71,7 @@ function MeetingsPage() {
       toast.success("Rapat dihapus");
       qc.invalidateQueries({ queryKey: ["meetings"] });
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (!user) return null;
@@ -70,64 +83,82 @@ function MeetingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Rapat/Kegiatan</h1>
-          <p className="text-sm text-muted-foreground">Kelola sesi kegiatan dan pantau kehadiran.</p>
+          <p className="text-sm text-muted-foreground">
+            Kelola sesi kegiatan dan pantau kehadiran.
+          </p>
         </div>
         {canCreate && (
           <CreateMeetingDialog
             userId={user.userId}
             userRoles={user.roles}
-            defaultDivisionId={user.roles.includes("kadiv") ? user.profile?.division_id ?? null : null}
+            defaultDivisionId={
+              user.roles.includes("kadiv") ? (user.profile?.division_id ?? null) : null
+            }
           />
         )}
       </div>
 
       <div className="grid gap-3">
         {(meetings ?? []).map((m: any) => {
-          const canManageThis = isHr || (isKadiv && (!m.division_id || m.division_id === user.profile?.division_id));
+          const canManageThis =
+            isHr || (isKadiv && (!m.division_id || m.division_id === user.profile?.division_id));
           return (
-          <Card key={m.id} className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => setSelectedMeeting(m)}>
-            <CardContent className="flex flex-col items-start gap-3 p-5 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <Calendar className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <p className="font-semibold">{m.title}</p>
-                    {m.prokers && (
-                      <Badge variant="secondary" className="gap-1 text-[11px]">
-                        <FolderKanban className="h-3 w-3" />
-                        {m.prokers.name}
-                      </Badge>
-                    )}
-                    {m.meeting_type && m.meeting_type !== "umum" && (
-                      <Badge variant="outline" className="text-[10px] capitalize">
-                        {m.meeting_type.replace("_", " ")}
-                      </Badge>
-                    )}
+            <Card
+              key={m.id}
+              className="cursor-pointer transition-colors hover:bg-muted/50"
+              onClick={() => setSelectedMeeting(m)}
+            >
+              <CardContent className="flex flex-col items-start gap-3 p-5 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-11 w-11 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <Calendar className="h-5 w-5" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {m.meeting_date} · {m.start_time?.slice(0, 5)} WIB · {m.divisions ? m.divisions.name : "Umum"}
-                  </p>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <p className="font-semibold">{m.title}</p>
+                      {m.prokers && (
+                        <Badge variant="secondary" className="gap-1 text-[11px]">
+                          <FolderKanban className="h-3 w-3" />
+                          {m.prokers.name}
+                        </Badge>
+                      )}
+                      {m.meeting_type && m.meeting_type !== "umum" && (
+                        <Badge variant="outline" className="text-[10px] capitalize">
+                          {m.meeting_type.replace("_", " ")}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {m.meeting_date} · {m.start_time?.slice(0, 5)} WIB ·{" "}
+                      {m.divisions ? m.divisions.name : "Umum"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-primary" onClick={() => setSelectedMeeting(m)}>
-                  <Users className="h-4 w-4" />
-                  Hadir: <b>{m.attendance?.[0]?.count ?? 0}</b>
-                </Button>
-                {canManageThis && (
-                  <Button variant="ghost" size="sm" onClick={() => del.mutate(m.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 text-muted-foreground hover:text-primary"
+                    onClick={() => setSelectedMeeting(m)}
+                  >
+                    <Users className="h-4 w-4" />
+                    Hadir: <b>{m.attendance?.[0]?.count ?? 0}</b>
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )})}
+                  {canManageThis && (
+                    <Button variant="ghost" size="sm" onClick={() => del.mutate(m.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
         {(meetings ?? []).length === 0 && (
           <Card>
-            <CardContent className="p-8 text-center text-sm text-muted-foreground">Belum ada kegiatan</CardContent>
+            <CardContent className="p-8 text-center text-sm text-muted-foreground">
+              Belum ada kegiatan
+            </CardContent>
           </Card>
         )}
       </div>
@@ -155,7 +186,12 @@ function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () 
   });
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>Daftar Kehadiran</DialogTitle>
@@ -164,32 +200,43 @@ function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () 
           <div className="rounded-lg border bg-muted/30 p-4">
             <p className="font-semibold">{meeting.title}</p>
             <p className="text-sm text-muted-foreground">
-              {meeting.meeting_date} · {meeting.start_time?.slice(0, 5)} WIB · {meeting.divisions ? meeting.divisions.name : "Umum"}
+              {meeting.meeting_date} · {meeting.start_time?.slice(0, 5)} WIB ·{" "}
+              {meeting.divisions ? meeting.divisions.name : "Umum"}
             </p>
             {meeting.prokers && (
               <p className="text-xs text-primary font-medium mt-1">
                 Program Kerja: {meeting.prokers.name} ({meeting.meeting_type?.replace("_", " ")})
               </p>
             )}
-            <p className="mt-1 text-sm text-muted-foreground">Total hadir: <b>{rows?.length ?? 0}</b></p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Total hadir: <b>{rows?.length ?? 0}</b>
+            </p>
           </div>
 
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Memuat kehadiran...</p>
           ) : (rows ?? []).length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground">Belum ada kehadiran untuk rapat ini.</p>
+            <p className="text-center text-sm text-muted-foreground">
+              Belum ada kehadiran untuk rapat ini.
+            </p>
           ) : (
             <div className="grid gap-2 max-h-[60vh] overflow-y-auto pr-1">
               {(rows ?? []).map((r: any) => (
                 <div key={r.id} className="flex items-center gap-3 rounded-lg border p-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={r.profiles?.avatar_url ?? undefined} />
-                    <AvatarFallback>{(r.profiles?.full_name ?? "??").slice(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {(r.profiles?.full_name ?? "??").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{r.profiles?.full_name ?? "-"}</p>
                     <p className="text-xs text-muted-foreground">
-                      {r.profiles?.divisions?.name ?? "Belum ada divisi"} · {new Date(r.tap_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                      {r.profiles?.divisions?.name ?? "Belum ada divisi"} ·{" "}
+                      {new Date(r.tap_time).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
                   <Badge variant={r.status === "telat" ? "destructive" : "default"}>
@@ -200,13 +247,23 @@ function AttendanceDialog({ meeting, onClose }: { meeting: Meeting; onClose: () 
             </div>
           )}
         </div>
-        <DialogFooter><Button onClick={onClose}>Tutup</Button></DialogFooter>
+        <DialogFooter>
+          <Button onClick={onClose}>Tutup</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId: string; userRoles: string[]; defaultDivisionId: string | null }) {
+function CreateMeetingDialog({
+  userId,
+  userRoles,
+  defaultDivisionId,
+}: {
+  userId: string;
+  userRoles: string[];
+  defaultDivisionId: string | null;
+}) {
   const qc = useQueryClient();
   const isHr = userRoles.includes("hr_admin");
   const [open, setOpen] = useState(false);
@@ -225,11 +282,15 @@ function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId:
 
   const { data: prokers } = useQuery({
     queryKey: ["prokers"],
-    queryFn: async () => (await supabase.from("prokers").select("id, name, division_id").order("name")).data ?? [],
+    queryFn: async () =>
+      (await supabase.from("prokers").select("id, name, division_id").order("name")).data ?? [],
   });
 
   async function submit() {
-    if (!title) { toast.error("Judul wajib diisi"); return; }
+    if (!title) {
+      toast.error("Judul wajib diisi");
+      return;
+    }
     const selectedProkerId = prokerId === "none" ? null : prokerId;
     const { error } = await supabase.from("meetings").insert({
       title,
@@ -241,7 +302,10 @@ function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId:
       meeting_type: meetingType,
       created_by: userId,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Rapat berhasil dibuat");
     setOpen(false);
     setTitle("");
@@ -253,21 +317,39 @@ function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId:
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button><Plus className="mr-1 h-4 w-4" /> Kegiatan baru</Button>
+        <Button>
+          <Plus className="mr-1 h-4 w-4" /> Kegiatan baru
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Buat Rapat / Kegiatan</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Buat Rapat / Kegiatan</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
-          <div><Label>Judul Kegiatan *</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-          <div className="grid grid-cols-2 gap-2">
-            <div><Label>Tanggal *</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-            <div><Label>Mulai *</Label><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
+          <div>
+            <Label>Judul Kegiatan *</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
-          <div><Label>Toleransi telat (menit)</Label><Input type="number" value={grace} onChange={(e) => setGrace(Number(e.target.value))} /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label>Tanggal *</Label>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div>
+              <Label>Mulai *</Label>
+              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <Label>Toleransi telat (menit)</Label>
+            <Input type="number" value={grace} onChange={(e) => setGrace(Number(e.target.value))} />
+          </div>
           <div>
             <Label>Terkait Program Kerja (Opsional)</Label>
             <Select value={prokerId} onValueChange={(v) => setProkerId(v)}>
-              <SelectTrigger><SelectValue placeholder="Bukan Rapat Proker (Umum)" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Bukan Rapat Proker (Umum)" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Tidak Ada (Rapat Rutin / Umum)</SelectItem>
                 {(prokers ?? []).map((p: any) => (
@@ -282,7 +364,9 @@ function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId:
             <div>
               <Label>Jenis Rapat Proker</Label>
               <Select value={meetingType} onValueChange={setMeetingType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="rapat_1">Rapat 1 (Perencanaan)</SelectItem>
                   <SelectItem value="rapat_2">Rapat 2 (Progress Check)</SelectItem>
@@ -296,18 +380,25 @@ function CreateMeetingDialog({ userId, userRoles, defaultDivisionId }: { userId:
           <div>
             <Label>Divisi (kosong = rapat umum)</Label>
             <Select value={divisionId} onValueChange={(v) => setDivisionId(v)}>
-              <SelectTrigger><SelectValue placeholder="Umum (semua divisi)" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Umum (semua divisi)" />
+              </SelectTrigger>
               <SelectContent>
                 {(divisions ?? [])
                   .filter((d: any) => isHr || d.id === defaultDivisionId)
-                  .map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                  .map((d: any) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
         </div>
-        <DialogFooter><Button onClick={submit}>Simpan</Button></DialogFooter>
+        <DialogFooter>
+          <Button onClick={submit}>Simpan</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-

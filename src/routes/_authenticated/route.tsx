@@ -1,4 +1,11 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter, useLocation } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  Link,
+  useRouter,
+  useLocation,
+} from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser, hasRole } from "@/hooks/use-current-user";
 import {
@@ -40,12 +47,32 @@ const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: () => true },
   { to: "/prokers", label: "Program Kerja", icon: FolderKanban, show: () => true },
   { to: "/struktur", label: "Struktur Organisasi", icon: Network, show: () => true },
-  { to: "/absensi", label: "Absensi", icon: ScanLine, show: (r) => r.includes("hr_admin") || r.includes("kadiv") },
+  {
+    to: "/absensi",
+    label: "Absensi",
+    icon: ScanLine,
+    show: (r) => r.includes("hr_admin") || r.includes("kadiv"),
+  },
   { to: "/meetings", label: "Rapat/Kegiatan", icon: CalendarDays, show: () => true },
   { to: "/jobdesk", label: "Jobdesk", icon: ClipboardList, show: () => true },
-  { to: "/anggota", label: "Anggota", icon: Users, show: (r) => r.includes("hr_admin") || r.includes("bph") || r.includes("kadiv") },
-  { to: "/rekap", label: "Rekap KPI", icon: FileBarChart, show: (r) => r.includes("hr_admin") || r.includes("bph") },
-  { to: "/pengaturan", label: "Pengaturan KPI", icon: Settings, show: (r) => r.includes("hr_admin") },
+  {
+    to: "/anggota",
+    label: "Anggota",
+    icon: Users,
+    show: (r) => r.includes("hr_admin") || r.includes("bph") || r.includes("kadiv"),
+  },
+  {
+    to: "/rekap",
+    label: "Rekap KPI",
+    icon: FileBarChart,
+    show: (r) => r.includes("hr_admin") || r.includes("bph"),
+  },
+  {
+    to: "/pengaturan",
+    label: "Pengaturan KPI",
+    icon: Settings,
+    show: (r) => r.includes("hr_admin"),
+  },
 ];
 
 const ROLE_LABEL: Record<string, string> = {
@@ -79,14 +106,18 @@ function AuthedLayout() {
   const displayRoleLabel =
     user.profile?.jabatan && !user.profile.jabatan.toLowerCase().includes("anggota")
       ? user.profile.jabatan
-      : ROLE_LABEL[primaryRole] ?? "Kepala Divisi";
+      : (ROLE_LABEL[primaryRole] ?? "Kepala Divisi");
 
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-5 py-4">
           <div className="flex items-center gap-3">
-            <img src="/hmm-logo.png" alt="Logo HMM FEB UNPAK" className="h-10 w-auto max-h-10 object-contain rounded-md shrink-0 shadow-sm" />
+            <img
+              src="/hmm-logo.png"
+              alt="Logo HMM FEB UNPAK"
+              className="h-10 w-auto max-h-10 object-contain rounded-md shrink-0 shadow-sm"
+            />
             <div>
               <p className="text-sm font-semibold">HMM FEB UNPAK</p>
               <p className="text-xs opacity-70">Himpunan Mahasiswa Manajemen</p>
@@ -121,11 +152,20 @@ function AuthedLayout() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{user.profile?.full_name || user.email}</p>
-              <p className="text-xs opacity-70">{displayRoleLabel}{user.division ? ` · ${user.division.code}` : ""}</p>
+              <p className="truncate text-sm font-medium">
+                {user.profile?.full_name || user.email}
+              </p>
+              <p className="text-xs opacity-70">
+                {displayRoleLabel}
+                {user.division ? ` · ${user.division.code}` : ""}
+              </p>
             </div>
           </div>
-          <Button variant="ghost" onClick={signOut} className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
+          <Button
+            variant="ghost"
+            onClick={signOut}
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+          >
             <LogOut className="mr-2 h-4 w-4" /> Keluar
           </Button>
         </div>
@@ -134,10 +174,16 @@ function AuthedLayout() {
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border/60 bg-card px-6 py-3 md:hidden">
           <div className="flex items-center gap-2">
-            <img src="/hmm-logo.png" alt="Logo HMM" className="h-8 w-auto max-h-8 object-contain rounded-md shrink-0 shadow-sm" />
+            <img
+              src="/hmm-logo.png"
+              alt="Logo HMM"
+              className="h-8 w-auto max-h-8 object-contain rounded-md shrink-0 shadow-sm"
+            />
             <span className="text-sm font-semibold">HMM KPI</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+          </Button>
         </header>
 
         {/* Mobile nav */}

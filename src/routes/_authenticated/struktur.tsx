@@ -24,7 +24,9 @@ function OrgNode({
   isKadiv?: boolean;
 }) {
   return (
-    <div className={`relative flex w-48 flex-col items-center rounded-xl border p-4 text-center shadow-sm transition-all hover:shadow-md ${isBph ? 'border-primary/50 bg-primary/5' : isKadiv ? 'border-secondary/50 bg-secondary/5' : 'bg-card'}`}>
+    <div
+      className={`relative flex w-48 flex-col items-center rounded-xl border p-4 text-center shadow-sm transition-all hover:shadow-md ${isBph ? "border-primary/50 bg-primary/5" : isKadiv ? "border-secondary/50 bg-secondary/5" : "bg-card"}`}
+    >
       <Avatar className="mb-3 h-16 w-16 border-2 border-background shadow-sm">
         <AvatarImage src={avatarUrl ?? undefined} />
         <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -57,7 +59,9 @@ function EmptyOrgNode({
       <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30 bg-muted/20 text-muted-foreground">
         <Users className="h-8 w-8 text-muted-foreground/60" />
       </div>
-      <p className="line-clamp-2 text-sm font-semibold leading-tight text-muted-foreground">Posisi Kosong</p>
+      <p className="line-clamp-2 text-sm font-semibold leading-tight text-muted-foreground">
+        Posisi Kosong
+      </p>
       <p className="mt-1 text-xs font-medium text-muted-foreground/80">{jabatan}</p>
     </div>
   );
@@ -100,11 +104,20 @@ function StrukturOrganisasiPage() {
       profiles.forEach((p: any) => {
         const uRoles = userRoles[p.id] || [];
         const pDivCode = p.divisions?.code?.toUpperCase();
-        const targetMap = (p.division_id && divMap[p.division_id]) || (pDivCode && divMap[pDivCode]);
+        const targetMap =
+          (p.division_id && divMap[p.division_id]) || (pDivCode && divMap[pDivCode]);
 
-        const isBphRole = uRoles.includes("bph") || p.jabatan?.toLowerCase().includes("ketua") || p.jabatan?.toLowerCase().includes("sekretaris") || p.jabatan?.toLowerCase().includes("bendahara");
+        const isBphRole =
+          uRoles.includes("bph") ||
+          p.jabatan?.toLowerCase().includes("ketua") ||
+          p.jabatan?.toLowerCase().includes("sekretaris") ||
+          p.jabatan?.toLowerCase().includes("bendahara");
         const isRND = pDivCode === "RND" || p.divisions?.name?.toLowerCase().includes("research");
-        const isKadivRole = uRoles.includes("kadiv") || p.jabatan?.toLowerCase().includes("kepala") || p.jabatan?.toLowerCase().includes("kadiv") || (uRoles.includes("hr_admin") && isRND);
+        const isKadivRole =
+          uRoles.includes("kadiv") ||
+          p.jabatan?.toLowerCase().includes("kepala") ||
+          p.jabatan?.toLowerCase().includes("kadiv") ||
+          (uRoles.includes("hr_admin") && isRND);
 
         if (isBphRole) {
           bph.push(p);
@@ -116,10 +129,18 @@ function StrukturOrganisasiPage() {
       });
 
       // Sort BPH by custom priority
-      const bphOrder = ["Ketua Umum", "Wakil Ketua Umum 1", "Wakil Ketua Umum 2", "Sekretaris Umum 1", "Sekretaris Umum 2", "Bendahara Umum 1", "Bendahara Umum 2"];
+      const bphOrder = [
+        "Ketua Umum",
+        "Wakil Ketua Umum 1",
+        "Wakil Ketua Umum 2",
+        "Sekretaris Umum 1",
+        "Sekretaris Umum 2",
+        "Bendahara Umum 1",
+        "Bendahara Umum 2",
+      ];
       bph.sort((a, b) => {
-        const idxA = bphOrder.findIndex(o => a.jabatan?.toLowerCase().includes(o.toLowerCase()));
-        const idxB = bphOrder.findIndex(o => b.jabatan?.toLowerCase().includes(o.toLowerCase()));
+        const idxA = bphOrder.findIndex((o) => a.jabatan?.toLowerCase().includes(o.toLowerCase()));
+        const idxB = bphOrder.findIndex((o) => b.jabatan?.toLowerCase().includes(o.toLowerCase()));
         return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
       });
 
@@ -139,28 +160,65 @@ function StrukturOrganisasiPage() {
   });
 
   if (isLoading || !orgData) {
-    return <div className="p-8 text-center text-muted-foreground">Memuat struktur organisasi...</div>;
+    return (
+      <div className="p-8 text-center text-muted-foreground">Memuat struktur organisasi...</div>
+    );
   }
 
   const bphList = orgData.bph || [];
-  
-  const ketua = bphList.find(p => p.jabatan?.toLowerCase().includes("ketua umum") && !p.jabatan?.toLowerCase().includes("wakil"));
-  
-  const wakil1 = bphList.find(p => p.jabatan?.toLowerCase().includes("wakil ketua umum 1") || p.jabatan?.toLowerCase() === "wakil ketua umum 1");
-  const wakil2 = bphList.find(p => p.jabatan?.toLowerCase().includes("wakil ketua umum 2") || p.jabatan?.toLowerCase() === "wakil ketua umum 2");
-  const otherWakils = bphList.filter(p => p.jabatan?.toLowerCase().includes("wakil") && p !== ketua && p !== wakil1 && p !== wakil2);
+
+  const ketua = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("ketua umum") &&
+      !p.jabatan?.toLowerCase().includes("wakil"),
+  );
+
+  const wakil1 = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("wakil ketua umum 1") ||
+      p.jabatan?.toLowerCase() === "wakil ketua umum 1",
+  );
+  const wakil2 = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("wakil ketua umum 2") ||
+      p.jabatan?.toLowerCase() === "wakil ketua umum 2",
+  );
+  const otherWakils = bphList.filter(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("wakil") && p !== ketua && p !== wakil1 && p !== wakil2,
+  );
   const finalWakil1 = wakil1 || otherWakils[0];
   const finalWakil2 = wakil2 || otherWakils[1];
 
-  const sek1 = bphList.find(p => p.jabatan?.toLowerCase().includes("sekretaris umum 1") || p.jabatan?.toLowerCase().includes("sekretaris 1"));
-  const sek2 = bphList.find(p => p.jabatan?.toLowerCase().includes("sekretaris umum 2") || p.jabatan?.toLowerCase().includes("sekretaris 2"));
-  const otherSeks = bphList.filter(p => p.jabatan?.toLowerCase().includes("sekretaris") && p !== sek1 && p !== sek2);
+  const sek1 = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("sekretaris umum 1") ||
+      p.jabatan?.toLowerCase().includes("sekretaris 1"),
+  );
+  const sek2 = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("sekretaris umum 2") ||
+      p.jabatan?.toLowerCase().includes("sekretaris 2"),
+  );
+  const otherSeks = bphList.filter(
+    (p) => p.jabatan?.toLowerCase().includes("sekretaris") && p !== sek1 && p !== sek2,
+  );
   const finalSek1 = sek1 || otherSeks[0];
   const finalSek2 = sek2 || otherSeks[1];
 
-  const ben1 = bphList.find(p => p.jabatan?.toLowerCase().includes("bendahara umum 1") || p.jabatan?.toLowerCase().includes("bendahara 1"));
-  const ben2 = bphList.find(p => p.jabatan?.toLowerCase().includes("bendahara umum 2") || p.jabatan?.toLowerCase().includes("bendahara 2"));
-  const otherBens = bphList.filter(p => p.jabatan?.toLowerCase().includes("bendahara") && p !== ben1 && p !== ben2);
+  const ben1 = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("bendahara umum 1") ||
+      p.jabatan?.toLowerCase().includes("bendahara 1"),
+  );
+  const ben2 = bphList.find(
+    (p) =>
+      p.jabatan?.toLowerCase().includes("bendahara umum 2") ||
+      p.jabatan?.toLowerCase().includes("bendahara 2"),
+  );
+  const otherBens = bphList.filter(
+    (p) => p.jabatan?.toLowerCase().includes("bendahara") && p !== ben1 && p !== ben2,
+  );
   const finalBen1 = ben1 || otherBens[0];
   const finalBen2 = ben2 || otherBens[1];
 
@@ -173,7 +231,6 @@ function StrukturOrganisasiPage() {
 
       <div className="overflow-x-auto pb-8">
         <div className="mx-auto flex min-w-max flex-col items-center">
-          
           {/* BPH SECTION */}
           <div className="relative mb-16 flex flex-col items-center gap-8">
             <div className="mb-2 rounded-full bg-primary/10 px-5 py-1.5 text-sm font-semibold text-primary">
@@ -183,7 +240,12 @@ function StrukturOrganisasiPage() {
             {/* KETUA */}
             <div className="relative z-10">
               {ketua ? (
-                <OrgNode name={ketua.full_name} jabatan={ketua.jabatan || "Ketua Umum"} avatarUrl={ketua.avatar_url} isBph />
+                <OrgNode
+                  name={ketua.full_name}
+                  jabatan={ketua.jabatan || "Ketua Umum"}
+                  avatarUrl={ketua.avatar_url}
+                  isBph
+                />
               ) : (
                 <EmptyOrgNode jabatan="Ketua Umum" isBph />
               )}
@@ -191,14 +253,19 @@ function StrukturOrganisasiPage() {
 
             {/* CONNECTOR KETUA -> WAKILS */}
             <div className="h-6 w-[2px] bg-border" />
-            
+
             {/* WAKILS */}
             <div className="relative z-10 flex gap-12">
               <div className="absolute -top-6 right-[25%] left-[25%] z-0 h-[2px] bg-border" />
               <div className="relative flex flex-col items-center">
                 <div className="absolute -top-6 z-0 h-6 w-[2px] bg-border" />
                 {finalWakil1 ? (
-                  <OrgNode name={finalWakil1.full_name} jabatan={finalWakil1.jabatan || "Wakil Ketua Umum 1"} avatarUrl={finalWakil1.avatar_url} isBph />
+                  <OrgNode
+                    name={finalWakil1.full_name}
+                    jabatan={finalWakil1.jabatan || "Wakil Ketua Umum 1"}
+                    avatarUrl={finalWakil1.avatar_url}
+                    isBph
+                  />
                 ) : (
                   <EmptyOrgNode jabatan="Wakil Ketua Umum 1" isBph />
                 )}
@@ -206,7 +273,12 @@ function StrukturOrganisasiPage() {
               <div className="relative flex flex-col items-center">
                 <div className="absolute -top-6 z-0 h-6 w-[2px] bg-border" />
                 {finalWakil2 ? (
-                  <OrgNode name={finalWakil2.full_name} jabatan={finalWakil2.jabatan || "Wakil Ketua Umum 2"} avatarUrl={finalWakil2.avatar_url} isBph />
+                  <OrgNode
+                    name={finalWakil2.full_name}
+                    jabatan={finalWakil2.jabatan || "Wakil Ketua Umum 2"}
+                    avatarUrl={finalWakil2.avatar_url}
+                    isBph
+                  />
                 ) : (
                   <EmptyOrgNode jabatan="Wakil Ketua Umum 2" isBph />
                 )}
@@ -226,7 +298,12 @@ function StrukturOrganisasiPage() {
               ].map((item, idx) => (
                 <div key={idx}>
                   {item.p ? (
-                    <OrgNode name={item.p.full_name} jabatan={item.p.jabatan || item.defaultTitle} avatarUrl={item.p.avatar_url} isBph />
+                    <OrgNode
+                      name={item.p.full_name}
+                      jabatan={item.p.jabatan || item.defaultTitle}
+                      avatarUrl={item.p.avatar_url}
+                      isBph
+                    />
                   ) : (
                     <EmptyOrgNode jabatan={item.defaultTitle} isBph />
                   )}
@@ -241,7 +318,6 @@ function StrukturOrganisasiPage() {
               <div className="flex gap-12 px-8">
                 {orgData.divisions.map((div: any) => (
                   <div key={div.id} className="flex min-w-[200px] flex-col items-center">
-                    
                     <h3 className="mb-6 rounded-full bg-primary/10 px-4 py-1 text-sm font-semibold text-primary">
                       Divisi {div.code}
                     </h3>
@@ -253,7 +329,11 @@ function StrukturOrganisasiPage() {
                           <div key={k.id} className="relative flex flex-col items-center">
                             <OrgNode
                               name={k.full_name}
-                              jabatan={k.jabatan && !k.jabatan.toLowerCase().includes("anggota") ? k.jabatan : `Kepala Divisi ${div.code}`}
+                              jabatan={
+                                k.jabatan && !k.jabatan.toLowerCase().includes("anggota")
+                                  ? k.jabatan
+                                  : `Kepala Divisi ${div.code}`
+                              }
                               avatarUrl={k.avatar_url}
                               isKadiv
                             />
@@ -276,27 +356,32 @@ function StrukturOrganisasiPage() {
                       <div className="h-[2px] w-full min-w-[120px] bg-border" />
                       {div.anggota.length > 0 ? (
                         div.anggota.map((a: any) => (
-                          <div key={a.id} className="relative flex w-48 flex-col items-center rounded-xl border bg-card p-3 text-center shadow-sm">
+                          <div
+                            key={a.id}
+                            className="relative flex w-48 flex-col items-center rounded-xl border bg-card p-3 text-center shadow-sm"
+                          >
                             <div className="absolute -top-3 z-0 h-3 w-[2px] bg-border" />
                             <Avatar className="mb-2 h-10 w-10">
                               <AvatarImage src={a.avatar_url ?? undefined} />
-                              <AvatarFallback>{a.full_name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                              <AvatarFallback>
+                                {a.full_name.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
                             </Avatar>
                             <p className="line-clamp-1 text-xs font-semibold">{a.full_name}</p>
-                            <p className="text-[10px] text-muted-foreground">{a.jabatan || "Anggota"}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {a.jabatan || "Anggota"}
+                            </p>
                           </div>
                         ))
                       ) : (
                         <p className="text-xs text-muted-foreground">Belum ada anggota</p>
                       )}
                     </div>
-
                   </div>
                 ))}
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>

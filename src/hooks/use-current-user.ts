@@ -44,19 +44,29 @@ export function useCurrentUser() {
       }
 
       const roles = (rolesRows ?? []).map((r: any) => r.role as AppRole);
-      const isRND = division?.code === "RND" || division?.name?.toLowerCase().includes("research") || division?.name?.toLowerCase().includes("r&d");
-      
-      const isJabatanKadiv = profile?.jabatan?.toLowerCase().includes("kepala") || profile?.jabatan?.toLowerCase().includes("kadiv");
+      const isRND =
+        division?.code === "RND" ||
+        division?.name?.toLowerCase().includes("research") ||
+        division?.name?.toLowerCase().includes("r&d");
+
+      const isJabatanKadiv =
+        profile?.jabatan?.toLowerCase().includes("kepala") ||
+        profile?.jabatan?.toLowerCase().includes("kadiv");
       if (isJabatanKadiv && !roles.includes("kadiv")) {
         roles.push("kadiv");
         // optionally upsert into db so it persists
-        supabase.from("user_roles").upsert({ user_id: uid, role: "kadiv", division_id: profile?.division_id ?? undefined }, { onConflict: "user_id,role" }).then(() => {});
+        supabase
+          .from("user_roles")
+          .upsert(
+            { user_id: uid, role: "kadiv", division_id: profile?.division_id ?? undefined },
+            { onConflict: "user_id,role" },
+          )
+          .then(() => {});
       }
 
       if (roles.includes("kadiv") && isRND && !roles.includes("hr_admin")) {
         roles.push("hr_admin");
       }
-      
 
       roles.sort((a, b) => {
         const order: Record<string, number> = { kadiv: 1, bph: 2, hr_admin: 3, anggota: 4 };

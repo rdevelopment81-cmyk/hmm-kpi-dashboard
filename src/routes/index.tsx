@@ -6,7 +6,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "KPI HMM FEB UNPAK — Sistem Kinerja Anggota" },
-      { name: "description", content: "Platform pengelolaan KPI, absensi, dan jobdesk untuk Himpunan Mahasiswa Manajemen FEB UNPAK." },
+      {
+        name: "description",
+        content:
+          "Platform pengelolaan KPI, absensi, dan jobdesk untuk Himpunan Mahasiswa Manajemen FEB UNPAK.",
+      },
     ],
   }),
 });
@@ -17,7 +21,11 @@ function Landing() {
       <header className="border-b border-border/60 bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <img src="/hmm-logo.png" alt="Logo HMM FEB UNPAK" className="h-10 w-auto max-h-10 object-contain rounded-md shrink-0 shadow-sm" />
+            <img
+              src="/hmm-logo.png"
+              alt="Logo HMM FEB UNPAK"
+              className="h-10 w-auto max-h-10 object-contain rounded-md shrink-0 shadow-sm"
+            />
             <div>
               <p className="text-sm font-semibold leading-tight">HMM FEB UNPAK</p>
               <p className="text-xs text-muted-foreground">Himpunan Mahasiswa Manajemen</p>
@@ -42,11 +50,17 @@ function Landing() {
               Absensi, Verifikasi jobdesk dan dashboard KPI
             </p>
             <div className="mt-6 flex gap-3">
-              <Link to="/auth"><Button size="lg">Mulai sekarang</Button></Link>
+              <Link to="/auth">
+                <Button size="lg">Mulai sekarang</Button>
+              </Link>
             </div>
           </div>
           <div className="overflow-hidden rounded-2xl shadow-xl border border-border/50">
-            <img src="/hero-image.jpg" alt="Foto Bersama Anggota HMM FEB UNPAK" className="h-full w-full object-cover" />
+            <img
+              src="/hero-image.jpg"
+              alt="Foto Bersama Anggota HMM FEB UNPAK"
+              className="h-full w-full object-cover"
+            />
           </div>
         </section>
       </main>
