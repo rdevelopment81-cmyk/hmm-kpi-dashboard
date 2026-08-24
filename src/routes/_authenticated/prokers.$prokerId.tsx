@@ -259,11 +259,11 @@ function ProkerDetailPage() {
         </div>
       </div>
 
-      {/* SECTION 1: Kepanitiaan Inti */}
+      {/* SECTION 1: Dewan Kegiatan */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" /> Kepanitiaan Inti
+            <ShieldCheck className="h-5 w-5 text-primary" /> Dewan Kegiatan
           </CardTitle>
           <CardDescription className="text-xs">
             3 posisi utama penanggung jawab kegiatan. Ketua Pelaksana memiliki hak mengelola
