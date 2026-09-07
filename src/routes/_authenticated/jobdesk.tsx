@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, FileText, CheckCircle2, XCircle, Download } from "lucide-react";
+import { Plus, FileText, CheckCircle2, XCircle, Download, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/jobdesk")({
   component: JobdeskPage,
@@ -33,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/jobdesk")({
 });
 
 const STATUS_COLOR: Record<string, string> = {
+  ditugaskan: "bg-secondary text-secondary-foreground",
   diajukan: "bg-accent text-accent-foreground",
   disetujui: "bg-success text-success-foreground",
   ditolak: "bg-destructive text-destructive-foreground",
@@ -140,6 +141,9 @@ function JobdeskPage() {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                {j.status === "ditugaskan" && j.profile_id === user?.userId && (
+                  <UploadProofDialog userId={user.userId} jobdeskId={j.id} />
+                )}
                 {j.file_url && (
                   <Button
                     size="sm"
@@ -297,6 +301,76 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
         <DialogFooter>
           <Button onClick={submit} disabled={loading}>
             {loading ? "Mengunggah..." : "Kirim"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
+function UploadProofDialog({ userId, jobdeskId }: { userId: string; jobdeskId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    if (!file) {
+      toast.error("File bukti wajib diunggah");
+      return;
+    }
+    setLoading(true);
+    const path = `${userId}/${Date.now()}_${file.name}`;
+    const { error: upErr } = await supabase.storage.from("jobdesk-files").upload(path, file);
+    if (upErr) {
+      toast.error(upErr.message);
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.from("jobdesks").update({
+      file_url: path,
+      file_name: file.name,
+      status: "diajukan",
+    }).eq("id", jobdeskId);
+
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Bukti pengerjaan diunggah");
+    setOpen(false);
+    setFile(null);
+    qc.invalidateQueries({ queryKey: ["jobdesks"] });
+    qc.invalidateQueries({ queryKey: ["seksi_jobdesks"] });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Upload className="mr-1 h-4 w-4" /> Kerjakan / Unggah Bukti
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Unggah Bukti Pengerjaan</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>File (PDF/gambar/dokumen)</Label>
+            <Input
+              type="file"
+              accept=".pdf,image/*,.doc,.docx,.xls,.xlsx"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={submit} disabled={loading}>
+            {loading ? "Mengunggah..." : "Kirim Bukti"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -82,6 +82,7 @@ export type Database = {
           review_note: string | null;
           reviewed_at: string | null;
           reviewed_by: string | null;
+          seksi_name: string | null;
           status: Database["public"]["Enums"]["jobdesk_status"];
           title: string;
           updated_at: string;
@@ -99,6 +100,7 @@ export type Database = {
           review_note?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
+          seksi_name?: string | null;
           status?: Database["public"]["Enums"]["jobdesk_status"];
           title: string;
           updated_at?: string;
@@ -116,6 +118,7 @@ export type Database = {
           review_note?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
+          seksi_name?: string | null;
           status?: Database["public"]["Enums"]["jobdesk_status"];
           title?: string;
           updated_at?: string;
@@ -415,10 +418,10 @@ export type Database = {
     Enums: {
       app_role: "bph" | "hr_admin" | "kadiv" | "anggota";
       attendance_status: "hadir" | "telat";
-      jobdesk_status: "diajukan" | "disetujui" | "ditolak";
+      jobdesk_status: "ditugaskan" | "diajukan" | "disetujui" | "ditolak";
       profile_status: "pending" | "aktif";
       proker_status: "perencanaan" | "rapat_1" | "rapat_2" | "rapat_3" | "pelaksanaan" | "selesai";
-      proker_role_type: "ketua_pelaksana" | "sekretaris" | "bendahara" | "koordinator";
+      proker_role_type: "ketua_pelaksana" | "sekretaris" | "bendahara" | "koordinator" | "anggota";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -542,10 +545,10 @@ export const Constants = {
     Enums: {
       app_role: ["bph", "hr_admin", "kadiv", "anggota"],
       attendance_status: ["hadir", "telat"],
-      jobdesk_status: ["diajukan", "disetujui", "ditolak"],
+      jobdesk_status: ["ditugaskan", "diajukan", "disetujui", "ditolak"],
       profile_status: ["pending", "aktif"],
       proker_status: ["perencanaan", "rapat_1", "rapat_2", "rapat_3", "pelaksanaan", "selesai"],
-      proker_role_type: ["ketua_pelaksana", "sekretaris", "bendahara", "koordinator"],
+      proker_role_type: ["ketua_pelaksana", "sekretaris", "bendahara", "koordinator", "anggota"],
     },
   },
 } as const;

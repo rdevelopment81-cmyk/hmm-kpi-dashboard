@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { STATUS_MAP } from "@/routes/_authenticated/prokers";
@@ -37,6 +39,7 @@ import {
   CheckCircle2,
   Clock,
   ChevronRight,
+  Briefcase,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/prokers/$prokerId")({
@@ -351,50 +354,15 @@ function ProkerDetailPage() {
           )}
         </CardHeader>
         <CardContent>
-          {koordinatorList.length === 0 ? (
-            <p className="text-center py-6 text-xs text-muted-foreground">
-              Belum ada koordinator seksi yang ditambahkan.
-            </p>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {koordinatorList.map((item: any) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between rounded-lg border p-3 bg-card"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={item.profiles?.avatar_url ?? undefined} />
-                      <AvatarFallback>
-                        {(item.profiles?.full_name ?? "?").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-primary">
-                        {item.seksi_name ?? "Koordinator"}
-                      </p>
-                      <p className="text-sm font-medium truncate">
-                        {item.profiles?.full_name ?? "-"}
-                      </p>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 mt-0.5">
-                        {item.profiles?.divisions?.code ?? "Lintas Divisi"}
-                      </Badge>
-                    </div>
-                  </div>
-                  {canManage && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeAssignMut.mutate(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <SeksiList 
+            assignments={assignments} 
+            canManage={canManage} 
+            allProfiles={allProfiles ?? []} 
+            prokerId={prokerId} 
+            prokerDivisionId={proker.division_id}
+            user={user}
+            removeAssignMut={removeAssignMut}
+          />
         </CardContent>
       </Card>
 
@@ -833,6 +801,395 @@ function CreateProkerMeetingDialog({
             </Button>
           </DialogFooter>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
+function SeksiList({ assignments, canManage, allProfiles, prokerId, prokerDivisionId, user, removeAssignMut }: any) {
+  const seksiNames = Array.from(new Set((assignments ?? []).filter((a: any) => a.seksi_name).map((a: any) => a.seksi_name))) as string[];
+  const [selectedSeksi, setSelectedSeksi] = useState<string | null>(null);
+
+  if (seksiNames.length === 0) {
+    return (
+      <p className="text-center py-6 text-xs text-muted-foreground">
+        Belum ada seksi yang ditambahkan.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {seksiNames.map((seksi) => {
+          const koordinator = assignments.find((a: any) => a.seksi_name === seksi && a.role_type === "koordinator");
+          const anggotaCount = assignments.filter((a: any) => a.seksi_name === seksi && a.role_type === "anggota").length;
+          
+          return (
+            <div
+              key={seksi}
+              className="flex items-center justify-between rounded-lg border p-3 bg-card hover:border-primary/50 cursor-pointer transition-colors"
+              onClick={() => setSelectedSeksi(seksi)}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={koordinator?.profiles?.avatar_url ?? undefined} />
+                  <AvatarFallback>
+                    {(koordinator?.profiles?.full_name ?? seksi).slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-primary truncate">
+                    {seksi}
+                  </p>
+                  <p className="text-sm font-medium truncate">
+                    {koordinator?.profiles?.full_name ?? "Tanpa Koordinator"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {anggotaCount} Anggota
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </div>
+          );
+        })}
+      </div>
+      {selectedSeksi && (
+        <SeksiDetailDialog
+          seksiName={selectedSeksi}
+          isOpen={!!selectedSeksi}
+          onOpenChange={(open) => !open && setSelectedSeksi(null)}
+          prokerId={prokerId}
+          assignments={assignments}
+          allProfiles={allProfiles}
+          canManage={canManage}
+          user={user}
+          removeAssignMut={removeAssignMut}
+        />
+      )}
+    </>
+  );
+}
+
+function SeksiDetailDialog({
+  seksiName,
+  isOpen,
+  onOpenChange,
+  prokerId,
+  assignments,
+  allProfiles,
+  canManage,
+  user,
+  removeAssignMut,
+}: any) {
+  const qc = useQueryClient();
+  const seksiAssigns = assignments.filter((a: any) => a.seksi_name === seksiName);
+  const koordinator = seksiAssigns.find((a: any) => a.role_type === "koordinator");
+  const anggotaList = seksiAssigns.filter((a: any) => a.role_type === "anggota");
+
+  // Fetch Jobdesks for this seksi
+  const { data: jobdesks, isLoading: isLoadingJobs } = useQuery({
+    queryKey: ["seksi_jobdesks", prokerId, seksiName],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("jobdesks")
+        .select("*, profiles(full_name, avatar_url)")
+        .eq("proker_id", prokerId)
+        .eq("seksi_name", seksiName)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+    enabled: isOpen,
+  });
+
+  const isKoordinatorOfThisSeksi = koordinator?.profile_id === user?.userId;
+  const canManageSeksi = canManage || isKoordinatorOfThisSeksi;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" /> Seksi {seksiName}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <Tabs defaultValue="anggota" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="anggota">Anggota</TabsTrigger>
+              <TabsTrigger value="jobdesk">Jobdesk Seksi</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="anggota" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">Koordinator</h3>
+              </div>
+              {koordinator ? (
+                <div className="flex items-center justify-between rounded-lg border p-3 bg-card">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={koordinator.profiles?.avatar_url ?? undefined} />
+                      <AvatarFallback>
+                        {(koordinator.profiles?.full_name ?? "?").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{koordinator.profiles?.full_name}</p>
+                      <Badge variant="outline" className="text-[10px] mt-0.5">
+                        {koordinator.profiles?.divisions?.code ?? "Lintas Divisi"}
+                      </Badge>
+                    </div>
+                  </div>
+                  {canManage && (
+                    <Button
+                      variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeAssignMut.mutate(koordinator.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">Belum ada koordinator.</p>
+              )}
+
+              <div className="flex items-center justify-between mt-6">
+                <h3 className="font-semibold text-sm">Anggota Seksi</h3>
+                {canManageSeksi && (
+                  <AddAnggotaSeksiDialog
+                    seksiName={seksiName}
+                    prokerId={prokerId}
+                    allProfiles={allProfiles}
+                  />
+                )}
+              </div>
+              {anggotaList.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">Belum ada anggota.</p>
+              ) : (
+                <div className="grid gap-2">
+                  {anggotaList.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between rounded-lg border p-3 bg-card">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={item.profiles?.avatar_url ?? undefined} />
+                          <AvatarFallback>
+                            {(item.profiles?.full_name ?? "?").slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{item.profiles?.full_name}</p>
+                        </div>
+                      </div>
+                      {canManageSeksi && (
+                        <Button
+                          variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeAssignMut.mutate(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="jobdesk" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">Jobdesk Seksi</h3>
+                {canManageSeksi && (
+                  <AssignJobdeskDialog
+                    prokerId={prokerId}
+                    seksiName={seksiName}
+                    anggotaList={[...(koordinator ? [koordinator] : []), ...anggotaList]}
+                    userId={user?.userId}
+                  />
+                )}
+              </div>
+              
+              {isLoadingJobs ? (
+                <p className="text-xs text-muted-foreground">Memuat jobdesk...</p>
+              ) : (jobdesks ?? []).length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">Belum ada jobdesk untuk seksi ini.</p>
+              ) : (
+                <div className="grid gap-3">
+                  {(jobdesks ?? []).map((j: any) => (
+                    <Card key={j.id} className="p-3">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-semibold text-sm flex items-center gap-1.5">
+                              <Briefcase className="h-4 w-4 text-primary" /> {j.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">Ditugaskan kepada: {j.profiles?.full_name}</p>
+                          </div>
+                          <Badge variant="outline" className={j.status === "ditugaskan" ? "bg-secondary text-secondary-foreground" : j.status === "diajukan" ? "bg-accent text-accent-foreground" : j.status === "disetujui" ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}>
+                            {j.status}
+                          </Badge>
+                        </div>
+                        {j.description && <p className="text-xs text-muted-foreground">{j.description}</p>}
+                        {j.status === "ditugaskan" && j.profile_id === user?.userId && (
+                          <div className="mt-2 flex justify-end">
+                            <Button size="sm" asChild>
+                              <Link to="/jobdesk">Ke Halaman Jobdesk</Link>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AddAnggotaSeksiDialog({ seksiName, prokerId, allProfiles }: any) {
+  const [open, setOpen] = useState(false);
+  const [profileId, setProfileId] = useState("");
+  const qc = useQueryClient();
+
+  const addMut = useMutation({
+    mutationFn: async () => {
+      if (!profileId) throw new Error("Pilih anggota");
+      const { error } = await supabase.from("proker_assignments").insert({
+        proker_id: prokerId,
+        profile_id: profileId,
+        role_type: "anggota",
+        seksi_name: seksiName,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Anggota berhasil ditambahkan");
+      setOpen(false);
+      setProfileId("");
+      qc.invalidateQueries({ queryKey: ["proker_assignments", prokerId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <UserPlus className="h-3.5 w-3.5" /> Tambah Anggota
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Tambah Anggota Seksi {seksiName}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <Label>Pilih Anggota</Label>
+            <Select value={profileId} onValueChange={setProfileId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih anggota..." />
+              </SelectTrigger>
+              <SelectContent>
+                {allProfiles.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.full_name} {p.divisions?.code ? `(${p.divisions.code})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => addMut.mutate()}>Tambah</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AssignJobdeskDialog({ prokerId, seksiName, anggotaList, userId }: any) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [profileId, setProfileId] = useState("");
+  const qc = useQueryClient();
+
+  const assignMut = useMutation({
+    mutationFn: async () => {
+      if (!title || !profileId) throw new Error("Judul dan anggota penerima wajib diisi");
+      const { error } = await supabase.from("jobdesks").insert({
+        proker_id: prokerId,
+        seksi_name: seksiName,
+        profile_id: profileId,
+        title,
+        description: desc,
+        deadline: deadline || null,
+        status: "ditugaskan",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Jobdesk berhasil ditugaskan");
+      setOpen(false);
+      setTitle("");
+      setDesc("");
+      setDeadline("");
+      setProfileId("");
+      qc.invalidateQueries({ queryKey: ["seksi_jobdesks", prokerId, seksiName] });
+      qc.invalidateQueries({ queryKey: ["jobdesks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="gap-1.5 text-xs">
+          <Plus className="h-3.5 w-3.5" /> Tugaskan Jobdesk
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Tugaskan Jobdesk Seksi</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 pt-2">
+          <div>
+            <Label>Pilih Penerima Tugas</Label>
+            <Select value={profileId} onValueChange={setProfileId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih anggota..." />
+              </SelectTrigger>
+              <SelectContent>
+                {anggotaList.map((a: any) => (
+                  <SelectItem key={a.profile_id} value={a.profile_id}>
+                    {a.profiles?.full_name} ({a.role_type})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Judul Tugas</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <Label>Deskripsi</Label>
+            <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} />
+          </div>
+          <div>
+            <Label>Deadline</Label>
+            <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => assignMut.mutate()}>Tugaskan</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
