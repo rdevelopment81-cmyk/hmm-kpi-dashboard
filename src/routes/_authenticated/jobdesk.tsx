@@ -17,6 +17,13 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, FileText, CheckCircle2, XCircle, Download } from "lucide-react";
 
@@ -43,7 +50,7 @@ function JobdeskPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("jobdesks")
-        .select("*, profiles(full_name, avatar_url), divisions(code,name)")
+        .select("*, profiles(full_name, avatar_url), divisions(code,name), prokers(name)")
         .order("created_at", { ascending: false });
       return data ?? [];
     },
@@ -118,6 +125,7 @@ function JobdeskPage() {
                   <p className="font-semibold">{j.title}</p>
                   <Badge className={STATUS_COLOR[j.status]}>{j.status}</Badge>
                   {j.divisions && <Badge variant="outline">{j.divisions.code}</Badge>}
+                  {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
                 </div>
                 {j.description && (
                   <p className="mt-1 text-sm text-muted-foreground">{j.description}</p>
@@ -181,8 +189,17 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [prokerId, setProkerId] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const { data: prokers } = useQuery({
+    queryKey: ["prokers-list"],
+    queryFn: async () => {
+      const { data } = await supabase.from("prokers").select("id, name").order("name");
+      return data ?? [];
+    },
+  });
 
   async function submit() {
     if (!title) {
@@ -206,6 +223,7 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
     const { error } = await supabase.from("jobdesks").insert({
       profile_id: userId,
       division_id: divisionId,
+      proker_id: prokerId || null,
       title,
       description: desc,
       deadline: deadline || null,
@@ -222,6 +240,7 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
     setTitle("");
     setDesc("");
     setDeadline("");
+    setProkerId("");
     setFile(null);
     qc.invalidateQueries({ queryKey: ["jobdesks"] });
   }
@@ -249,6 +268,22 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
           <div>
             <Label>Deadline</Label>
             <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+          </div>
+          <div>
+            <Label>Program Kerja (Opsional)</Label>
+            <Select value={prokerId || "none"} onValueChange={(val) => setProkerId(val === "none" ? "" : val)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih program kerja..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" className="text-muted-foreground">Tidak terkait proker</SelectItem>
+                {(prokers ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label>File (PDF/gambar/dokumen)</Label>

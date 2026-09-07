@@ -78,6 +78,7 @@ export type Database = {
           file_url: string | null;
           id: string;
           profile_id: string;
+          proker_id: string | null;
           review_note: string | null;
           reviewed_at: string | null;
           reviewed_by: string | null;
@@ -94,6 +95,7 @@ export type Database = {
           file_url?: string | null;
           id?: string;
           profile_id: string;
+          proker_id?: string | null;
           review_note?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
@@ -110,6 +112,7 @@ export type Database = {
           file_url?: string | null;
           id?: string;
           profile_id?: string;
+          proker_id?: string | null;
           review_note?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
@@ -130,6 +133,13 @@ export type Database = {
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "jobdesks_proker_id_fkey";
+            columns: ["proker_id"];
+            isOneToOne: false;
+            referencedRelation: "prokers";
             referencedColumns: ["id"];
           },
         ];
