@@ -38,7 +38,7 @@ function AbsensiPage() {
   const [last, setLast] = useState<LastTap | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canUse = user?.roles.some((r) => r === "hr_admin" || r === "kadiv");
+  const canUse = user?.roles.some((r) => r === "hr_admin" || r === "kadiv" || r === "dewan_kegiatan");
 
   const { data: meetings } = useQuery({
     queryKey: ["meetings-today"],

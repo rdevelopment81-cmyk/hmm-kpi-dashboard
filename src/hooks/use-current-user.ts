@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "bph" | "hr_admin" | "kadiv" | "anggota";
+export type AppRole = "bph" | "hr_admin" | "kadiv" | "anggota" | "dewan_kegiatan";
 
 export interface CurrentUserData {
   userId: string;
@@ -28,9 +28,10 @@ export function useCurrentUser() {
       if (!userData.user) return null;
       const uid = userData.user.id;
 
-      const [{ data: profile }, { data: rolesRows }] = await Promise.all([
+      const [{ data: profile }, { data: rolesRows }, { count: dewanCount }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.from("proker_assignments").select("*", { count: "exact", head: true }).eq("profile_id", uid).in("role_type", ["ketua_pelaksana", "sekretaris", "bendahara"]),
       ]);
 
       let division = null;
@@ -66,6 +67,10 @@ export function useCurrentUser() {
 
       if (roles.includes("kadiv") && isRND && !roles.includes("hr_admin")) {
         roles.push("hr_admin");
+      }
+
+      if ((dewanCount ?? 0) > 0) {
+        roles.push("dewan_kegiatan");
       }
 
       roles.sort((a, b) => {

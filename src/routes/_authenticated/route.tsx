@@ -51,7 +51,7 @@ const NAV: NavItem[] = [
     to: "/absensi",
     label: "Absensi",
     icon: ScanLine,
-    show: (r) => r.includes("hr_admin") || r.includes("kadiv"),
+    show: (r) => r.includes("hr_admin") || r.includes("kadiv") || r.includes("dewan_kegiatan"),
   },
   { to: "/meetings", label: "Rapat/Kegiatan", icon: CalendarDays, show: () => true },
   { to: "/jobdesk", label: "Jobdesk", icon: ClipboardList, show: () => true },
