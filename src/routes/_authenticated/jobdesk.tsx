@@ -141,7 +141,7 @@ function JobdeskPage() {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {j.status !== "disetujui" && j.profile_id === user?.userId && (
+                {j.profile_id === user?.userId && (
                   <UploadProofDialog userId={user.userId} jobdeskId={j.id} hasFile={!!j.file_url} />
                 )}
                 {j.file_url && (
@@ -152,23 +152,6 @@ function JobdeskPage() {
                   >
                     <Download className="mr-1 h-4 w-4" /> File
                   </Button>
-                )}
-                {canReviewThis && (
-                  <>
-                    <Button
-                      size="sm"
-                      onClick={() => review.mutate({ id: j.id, status: "disetujui" })}
-                    >
-                      <CheckCircle2 className="mr-1 h-4 w-4" /> Setujui
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => review.mutate({ id: j.id, status: "ditolak" })}
-                    >
-                      <XCircle className="mr-1 h-4 w-4" /> Tolak
-                    </Button>
-                  </>
                 )}
               </div>
             </CardContent>
@@ -332,7 +315,7 @@ function UploadProofDialog({ userId, jobdeskId, hasFile }: { userId: string; job
     const { error } = await supabase.from("jobdesks").update({
       file_url: path,
       file_name: file.name,
-      status: "diajukan",
+      status: "disetujui",
     }).eq("id", jobdeskId);
 
     setLoading(false);
