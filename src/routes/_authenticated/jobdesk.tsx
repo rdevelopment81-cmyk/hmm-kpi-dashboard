@@ -141,8 +141,8 @@ function JobdeskPage() {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {j.status === "ditugaskan" && j.profile_id === user?.userId && (
-                  <UploadProofDialog userId={user.userId} jobdeskId={j.id} />
+                {j.status !== "disetujui" && j.profile_id === user?.userId && (
+                  <UploadProofDialog userId={user.userId} jobdeskId={j.id} hasFile={!!j.file_url} />
                 )}
                 {j.file_url && (
                   <Button
@@ -309,7 +309,7 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
 }
 
 
-function UploadProofDialog({ userId, jobdeskId }: { userId: string; jobdeskId: string }) {
+function UploadProofDialog({ userId, jobdeskId, hasFile }: { userId: string; jobdeskId: string; hasFile?: boolean }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -340,7 +340,7 @@ function UploadProofDialog({ userId, jobdeskId }: { userId: string; jobdeskId: s
       toast.error(error.message);
       return;
     }
-    toast.success("Bukti pengerjaan diunggah");
+    toast.success(hasFile ? "Bukti pengerjaan diperbarui" : "Bukti pengerjaan diunggah");
     setOpen(false);
     setFile(null);
     qc.invalidateQueries({ queryKey: ["jobdesks"] });
@@ -351,7 +351,7 @@ function UploadProofDialog({ userId, jobdeskId }: { userId: string; jobdeskId: s
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Upload className="mr-1 h-4 w-4" /> Kerjakan / Unggah Bukti
+          <Upload className="mr-1 h-4 w-4" /> {hasFile ? "Ganti Bukti" : "Kerjakan / Unggah Bukti"}
         </Button>
       </DialogTrigger>
       <DialogContent>
