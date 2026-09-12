@@ -34,9 +34,16 @@ export const Route = createFileRoute("/_authenticated/jobdesk")({
 
 const STATUS_COLOR: Record<string, string> = {
   ditugaskan: "bg-secondary text-secondary-foreground",
-  diajukan: "bg-accent text-accent-foreground",
+  diajukan: "bg-success text-success-foreground",
   disetujui: "bg-success text-success-foreground",
   ditolak: "bg-destructive text-destructive-foreground",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  ditugaskan: "Belum Selesai",
+  diajukan: "Selesai",
+  disetujui: "Selesai",
+  ditolak: "Belum Selesai",
 };
 
 function JobdeskPage() {
@@ -124,7 +131,7 @@ function JobdeskPage() {
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" />
                   <p className="font-semibold">{j.title}</p>
-                  <Badge className={STATUS_COLOR[j.status]}>{j.status}</Badge>
+                  <Badge className={STATUS_COLOR[j.status]}>{STATUS_LABEL[j.status] || j.status}</Badge>
                   {j.divisions && <Badge variant="outline">{j.divisions.code}</Badge>}
                   {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
                 </div>
