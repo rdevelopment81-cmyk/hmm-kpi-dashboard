@@ -132,7 +132,8 @@ function JobdeskPage() {
                   <FileText className="h-4 w-4 text-primary" />
                   <p className="font-semibold">{j.title}</p>
                   <Badge className={STATUS_COLOR[j.status]}>{STATUS_LABEL[j.status] || j.status}</Badge>
-                  {j.divisions && <Badge variant="outline">{j.divisions.code}</Badge>}
+                  {j.divisions && !j.prokers && <Badge variant="outline">{j.divisions.code}</Badge>}
+                  {j.seksi_name && <Badge variant="outline">{j.seksi_name}</Badge>}
                   {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
                 </div>
                 {j.description && (
