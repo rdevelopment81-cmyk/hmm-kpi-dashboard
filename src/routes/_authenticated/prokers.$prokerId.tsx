@@ -1026,8 +1026,8 @@ function SeksiDetailDialog({
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">Ditugaskan kepada: {j.profiles?.full_name}</p>
                           </div>
-                          <Badge variant="outline" className={j.status === "ditugaskan" ? "bg-secondary text-secondary-foreground" : j.status === "diajukan" ? "bg-accent text-accent-foreground" : j.status === "disetujui" ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}>
-                            {j.status}
+                          <Badge variant="outline" className={j.status === "ditugaskan" || j.status === "ditolak" ? "bg-secondary text-secondary-foreground" : "bg-success text-success-foreground"}>
+                            {j.status === "ditugaskan" || j.status === "ditolak" ? "Belum Selesai" : "Selesai"}
                           </Badge>
                         </div>
                         {j.description && <p className="text-xs text-muted-foreground">{j.description}</p>}
