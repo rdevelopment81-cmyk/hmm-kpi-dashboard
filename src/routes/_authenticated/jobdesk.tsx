@@ -132,6 +132,7 @@ function JobdeskPage() {
                   <FileText className="h-4 w-4 text-primary" />
                   <p className="font-semibold">{j.title}</p>
                   <Badge className={STATUS_COLOR[j.status]}>{STATUS_LABEL[j.status] || j.status}</Badge>
+                  {j.timing && <Badge variant="outline">{j.timing}</Badge>}
                   {j.divisions && !j.prokers && <Badge variant="outline">{j.divisions.code}</Badge>}
                   {j.seksi_name && <Badge variant="outline">{j.seksi_name}</Badge>}
                   {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
@@ -183,6 +184,7 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [timing, setTiming] = useState("");
   const [deadline, setDeadline] = useState("");
   const [prokerId, setProkerId] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -221,6 +223,7 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
       proker_id: prokerId || null,
       title,
       description: desc,
+      timing: timing || null,
       deadline: deadline || null,
       file_url: fileUrl,
       file_name: fileName,
@@ -234,6 +237,7 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
     setOpen(false);
     setTitle("");
     setDesc("");
+    setTiming("");
     setDeadline("");
     setProkerId("");
     setFile(null);
@@ -259,6 +263,19 @@ function UploadDialog({ userId, divisionId }: { userId: string; divisionId: stri
           <div>
             <Label>Deskripsi</Label>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} />
+          </div>
+          <div>
+            <Label>Waktu Pelaksanaan (Opsional)</Label>
+            <Select value={timing || "none"} onValueChange={(val) => setTiming(val === "none" ? "" : val)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih waktu pelaksanaan..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" className="text-muted-foreground">Tidak ditentukan</SelectItem>
+                <SelectItem value="Sebelum Acara">Sebelum Acara</SelectItem>
+                <SelectItem value="Saat Acara">Saat Acara</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label>Deadline</Label>

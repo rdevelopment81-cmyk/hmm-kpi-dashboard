@@ -1025,9 +1025,12 @@ function SeksiDetailDialog({
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">Ditugaskan kepada: {j.profiles?.full_name}</p>
                           </div>
-                          <Badge variant="outline" className={j.status === "ditugaskan" || j.status === "ditolak" ? "bg-secondary text-secondary-foreground" : "bg-success text-success-foreground"}>
-                            {j.status === "ditugaskan" || j.status === "ditolak" ? "Belum Selesai" : "Selesai"}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className={j.status === "ditugaskan" || j.status === "ditolak" ? "bg-secondary text-secondary-foreground" : "bg-success text-success-foreground"}>
+                              {j.status === "ditugaskan" || j.status === "ditolak" ? "Belum Selesai" : "Selesai"}
+                            </Badge>
+                            {j.timing && <Badge variant="outline">{j.timing}</Badge>}
+                          </div>
                         </div>
                         {j.description && <p className="text-xs text-muted-foreground">{j.description}</p>}
                         {j.status === "ditugaskan" && j.profile_id === user?.userId && (
@@ -1115,6 +1118,7 @@ function AssignJobdeskDialog({ prokerId, seksiName, anggotaList, userId }: any) 
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [timing, setTiming] = useState("");
   const [deadline, setDeadline] = useState("");
   const [profileId, setProfileId] = useState("");
   const qc = useQueryClient();
@@ -1128,6 +1132,7 @@ function AssignJobdeskDialog({ prokerId, seksiName, anggotaList, userId }: any) 
         profile_id: profileId,
         title,
         description: desc,
+        timing: timing || null,
         deadline: deadline || null,
         status: "ditugaskan",
       });
@@ -1180,6 +1185,19 @@ function AssignJobdeskDialog({ prokerId, seksiName, anggotaList, userId }: any) 
           <div>
             <Label>Deskripsi</Label>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} />
+          </div>
+          <div>
+            <Label>Waktu Pelaksanaan (Opsional)</Label>
+            <Select value={timing || "none"} onValueChange={(val) => setTiming(val === "none" ? "" : val)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih waktu pelaksanaan..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" className="text-muted-foreground">Tidak ditentukan</SelectItem>
+                <SelectItem value="Sebelum Acara">Sebelum Acara</SelectItem>
+                <SelectItem value="Saat Acara">Saat Acara</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label>Deadline</Label>
