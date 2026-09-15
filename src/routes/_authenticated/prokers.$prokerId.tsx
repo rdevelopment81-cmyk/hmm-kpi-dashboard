@@ -358,6 +358,7 @@ function ProkerDetailPage() {
             canManage={canManage} 
             allProfiles={allProfiles ?? []} 
             prokerId={prokerId} 
+            prokerName={proker.name}
             prokerDivisionId={proker.division_id}
             user={user}
             removeAssignMut={removeAssignMut}
@@ -806,7 +807,7 @@ function CreateProkerMeetingDialog({
 }
 
 
-function SeksiList({ assignments, canManage, allProfiles, prokerId, prokerDivisionId, user, removeAssignMut }: any) {
+function SeksiList({ assignments, canManage, allProfiles, prokerId, prokerName, prokerDivisionId, user, removeAssignMut }: any) {
   const seksiNames = Array.from(new Set((assignments ?? []).filter((a: any) => a.seksi_name).map((a: any) => a.seksi_name))) as string[];
   const [selectedSeksi, setSelectedSeksi] = useState<string | null>(null);
 
@@ -861,6 +862,7 @@ function SeksiList({ assignments, canManage, allProfiles, prokerId, prokerDivisi
           isOpen={!!selectedSeksi}
           onOpenChange={(open) => !open && setSelectedSeksi(null)}
           prokerId={prokerId}
+          prokerName={prokerName}
           assignments={assignments}
           allProfiles={allProfiles}
           canManage={canManage}
@@ -877,6 +879,7 @@ function SeksiDetailDialog({
   isOpen,
   onOpenChange,
   prokerId,
+  prokerName,
   assignments,
   allProfiles,
   canManage,
@@ -894,7 +897,7 @@ function SeksiDetailDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("jobdesks")
-        .select("*, profiles(full_name, avatar_url)")
+        .select("*, profiles(full_name, avatar_url, phone_number)")
         .eq("proker_id", prokerId)
         .eq("seksi_name", seksiName)
         .order("created_at", { ascending: false });
@@ -1030,6 +1033,21 @@ function SeksiDetailDialog({
                               {j.status === "ditugaskan" || j.status === "ditolak" ? "Belum Selesai" : "Selesai"}
                             </Badge>
                             {j.timing && <Badge variant="outline">{j.timing}</Badge>}
+                            {canManageSeksi && j.profiles?.phone_number && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 text-[10px] px-2 ml-2 bg-green-500/10 text-green-700 hover:bg-green-500/20 hover:text-green-800 border-green-500/20"
+                                onClick={() => {
+                                  const msg = `Halo ${j.profiles.full_name}, kamu mendapat tugas baru di *${prokerName || 'Proker'}*:\n\n*${j.title}*\nWaktu: ${j.timing || '-'}\nTenggat Waktu: ${j.deadline || '-'}\n\nSilakan cek website untuk detailnya ya!`;
+                                  let phone = j.profiles.phone_number;
+                                  if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+                                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                                }}
+                              >
+                                Beri Tahu via WA
+                              </Button>
+                            )}
                           </div>
                         </div>
                         {j.description && <p className="text-xs text-muted-foreground">{j.description}</p>}

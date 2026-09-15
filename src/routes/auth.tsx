@@ -48,6 +48,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [nim, setNim] = useState("");
+  const [phone, setPhone] = useState("");
   const [divisionId, setDivisionId] = useState<string>("");
   const [posisiKey, setPosisiKey] = useState<string>("anggota");
 
@@ -114,6 +115,7 @@ function AuthPage() {
         data: {
           full_name: fullName,
           nim,
+          phone_number: phone,
           division_id: targetDivId && targetDivId !== "bph-virtual-id" ? targetDivId : null,
           requested_role: selectedPos.role,
           jabatan: selectedPos.label,
@@ -255,6 +257,17 @@ function AuthPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div>
+                    <Label>Nomor WhatsApp</Label>
+                    <Input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Contoh: 08123456789"
+                    />
                   </div>
 
                   <div>
