@@ -341,7 +341,7 @@ function ProkerDetailPage() {
               <Users className="h-5 w-5 text-primary" /> Koordinator Seksi
             </CardTitle>
             <CardDescription className="text-xs">
-              Koordinator tiap seksi untuk menjalankan program kerja ini
+              Koordinator tiap seksi untuk menjalankan program kerja ini. Koordinator tiap seksi memiliki hak mengelola seksi nya masing-masing.
             </CardDescription>
           </div>
           {canManage && (
