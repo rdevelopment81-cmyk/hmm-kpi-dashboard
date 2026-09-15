@@ -1118,7 +1118,7 @@ function AssignJobdeskDialog({ prokerId, seksiName, anggotaList, userId }: any) 
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [timing, setTiming] = useState("");
+  const [timing, setTiming] = useState("Sebelum Acara");
   const [deadline, setDeadline] = useState("");
   const [profileId, setProfileId] = useState("");
   const qc = useQueryClient();
@@ -1187,13 +1187,12 @@ function AssignJobdeskDialog({ prokerId, seksiName, anggotaList, userId }: any) 
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} />
           </div>
           <div>
-            <Label>Waktu Pelaksanaan (Opsional)</Label>
-            <Select value={timing || "none"} onValueChange={(val) => setTiming(val === "none" ? "" : val)}>
+            <Label>Waktu Pelaksanaan</Label>
+            <Select value={timing} onValueChange={setTiming}>
               <SelectTrigger>
                 <SelectValue placeholder="Pilih waktu pelaksanaan..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none" className="text-muted-foreground">Tidak ditentukan</SelectItem>
                 <SelectItem value="Sebelum Acara">Sebelum Acara</SelectItem>
                 <SelectItem value="Saat Acara">Saat Acara</SelectItem>
               </SelectContent>
