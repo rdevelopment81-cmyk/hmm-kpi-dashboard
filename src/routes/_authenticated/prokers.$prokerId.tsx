@@ -72,6 +72,7 @@ const COMMON_SEKSI_SUGGESTIONS = [
   "PDD (Publikasi, Dekorasi & Dokumentasi)",
   "Perlengkapan",
   "Konsumsi",
+  "P3K",
 ];
 
 function ProkerDetailPage() {
