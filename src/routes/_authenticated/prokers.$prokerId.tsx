@@ -192,13 +192,32 @@ function ProkerDetailPage() {
 
   // Remove Assignment Mutation
   const removeAssignMut = useMutation({
-    mutationFn: async (assignmentId: string) => {
-      const { error } = await supabase.from("proker_assignments").delete().eq("id", assignmentId);
+    mutationFn: async (assignId: string) => {
+      // Dapatkan info assignment sebelum dihapus
+      const { data: assignData } = await supabase
+        .from("proker_assignments")
+        .select("*")
+        .eq("id", assignId)
+        .single();
+        
+      if (assignData) {
+        // Hapus jobdesk yang sudah ditugaskan ke anggota ini di seksi ini
+        await supabase
+          .from("jobdesks")
+          .delete()
+          .eq("proker_id", assignData.proker_id)
+          .eq("seksi_name", assignData.seksi_name || "")
+          .eq("profile_id", assignData.profile_id);
+      }
+
+      // Hapus keanggotaannya
+      const { error } = await supabase.from("proker_assignments").delete().eq("id", assignId);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Penugasan dihapus");
+      toast.success("Anggota & jobdesknya berhasil dihapus");
       qc.invalidateQueries({ queryKey: ["proker_assignments", prokerId] });
+      qc.invalidateQueries({ queryKey: ["seksi_jobdesks"] }); // refresh jobdesk list
       qc.invalidateQueries({ queryKey: ["prokers"] });
     },
     onError: (e: Error) => toast.error(e.message),
