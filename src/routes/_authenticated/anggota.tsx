@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { CreditCard, ScanLine, Search, CheckCircle2, Trash2 } from "lucide-react";
+import { CreditCard, ScanLine, Search, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/anggota")({
   component: AnggotaPage,
@@ -135,12 +135,7 @@ function AnggotaPage() {
         !search ||
         p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
         p.nim?.includes(search),
-    )
-    .sort(
-      (a: any, b: any) => (a.status === "pending" ? -1 : 1) - (b.status === "pending" ? -1 : 1),
     );
-
-  const pendingCount = (profiles ?? []).filter((p: any) => p.status === "pending").length;
 
   return (
     <div className="space-y-6">
@@ -148,14 +143,9 @@ function AnggotaPage() {
         <div>
           <h1 className="text-2xl font-bold">Manajemen Anggota</h1>
           <p className="text-sm text-muted-foreground">
-            Verifikasi pendaftar baru, kelola profil, role, divisi, dan kartu RFID.
+            Kelola profil, role, divisi, dan kartu RFID.
           </p>
         </div>
-        {isHR && pendingCount > 0 && (
-          <Badge variant="destructive" className="gap-1">
-            {pendingCount} menunggu verifikasi
-          </Badge>
-        )}
       </div>
 
       <div className="relative">
@@ -179,9 +169,8 @@ function AnggotaPage() {
       <div className="grid gap-3">
         {filtered.map((p: any) => {
           const currentRole = p.role ?? "anggota";
-          const isPending = p.status === "pending";
           return (
-            <Card key={p.id} className={isPending ? "border-destructive/50" : undefined}>
+            <Card key={p.id}>
               <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
                 <div className="flex flex-1 items-center gap-3">
                   <Avatar>
@@ -196,7 +185,6 @@ function AnggotaPage() {
                       {p.email} · {p.nim || "—"}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {isPending && <Badge variant="destructive">Pending</Badge>}
                       <Badge variant="outline">{p.divisions?.code ?? "Belum ada divisi"}</Badge>
                       <Badge>{currentRole}</Badge>
                       {p.id_kartu && (
@@ -274,17 +262,6 @@ function AnggotaPage() {
                       <ScanLine className="mr-1 h-4 w-4" />{" "}
                       {p.id_kartu ? "Ganti Kartu RFID" : "Daftarkan Kartu RFID"}
                     </Button>
-                    {isPending && (
-                      <Button
-                        size="sm"
-                        className="w-full md:w-auto"
-                        onClick={() =>
-                          updateProfile.mutate({ id: p.id, patch: { status: "aktif" } })
-                        }
-                      >
-                        <CheckCircle2 className="mr-1 h-4 w-4" /> Aktifkan
-                      </Button>
-                    )}
                     <Button
                       variant="destructive"
                       size="sm"
