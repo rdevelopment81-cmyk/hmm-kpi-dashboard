@@ -135,6 +135,7 @@ function JobdeskPage() {
         {(jobs ?? []).map((j: any) => {
           const canReviewThis = canReview && j.status === "diajukan" && j.profile_id !== user?.userId && 
             (isHrOrBph || j.division_id === user?.profile?.division_id);
+          const canManageThis = canReview && (isHrOrBph || j.division_id === user?.profile?.division_id);
 
           return (
           <Card key={j.id}>
@@ -149,7 +150,7 @@ function JobdeskPage() {
                   {j.seksi_name && <Badge variant="outline">{j.seksi_name}</Badge>}
                   {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
                   
-                  {canReviewThis && j.profiles?.phone_number && (
+                  {canManageThis && j.profiles?.phone_number && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -164,7 +165,7 @@ function JobdeskPage() {
                       Beri Tahu via WA
                     </Button>
                   )}
-                  {canReviewThis && (
+                  {canManageThis && (
                     <Button
                       variant="ghost"
                       size="sm"
