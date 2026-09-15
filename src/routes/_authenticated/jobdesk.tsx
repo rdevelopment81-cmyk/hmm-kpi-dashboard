@@ -150,16 +150,20 @@ function JobdeskPage() {
                   {j.seksi_name && <Badge variant="outline">{j.seksi_name}</Badge>}
                   {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
                   
-                  {canManageThis && j.profiles?.phone_number && (
+                  {canManageThis && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 text-[10px] px-2 ml-1 bg-green-500/10 text-green-700 hover:bg-green-500/20 hover:text-green-800 border-green-500/20"
+                      disabled={!j.profiles?.phone_number}
+                      title={!j.profiles?.phone_number ? "Anggota ini belum mengisi nomor WA" : ""}
+                      className="h-6 text-[10px] px-2 ml-1 bg-green-500/10 text-green-700 hover:bg-green-500/20 hover:text-green-800 border-green-500/20 disabled:opacity-50"
                       onClick={() => {
-                        const msg = `Halo ${j.profiles.full_name}, kamu mendapat tugas baru:\n\n*${j.title}*\nWaktu: ${j.timing || '-'}\nTenggat Waktu: ${j.deadline || '-'}\n\nSilakan cek website untuk detailnya ya!`;
-                        let phone = j.profiles.phone_number;
-                        if (phone.startsWith("0")) phone = "62" + phone.slice(1);
-                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+                        const msg = `Halo ${j.profiles?.full_name}, kamu mendapat tugas baru:\n\n*${j.title}*\nWaktu: ${j.timing || '-'}\nTenggat Waktu: ${j.deadline || '-'}\n\nSilakan cek website untuk detailnya ya!`;
+                        let phone = j.profiles?.phone_number;
+                        if (phone) {
+                          if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+                          window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+                        }
                       }}
                     >
                       Beri Tahu via WA
