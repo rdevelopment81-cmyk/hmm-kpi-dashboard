@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, FileText, CheckCircle2, XCircle, Download, Upload } from "lucide-react";
+import { Plus, FileText, CheckCircle2, XCircle, Download, Upload, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/jobdesk")({
   component: JobdeskPage,
