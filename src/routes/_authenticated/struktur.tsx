@@ -144,7 +144,9 @@ function StrukturOrganisasiPage() {
         return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
       });
 
-      const structuredDivisions = (divisions ?? []).map((d) => {
+      const structuredDivisions = (divisions ?? [])
+        .filter((d) => d.code?.toUpperCase() !== "BPH" && d.name?.toUpperCase() !== "BPH")
+        .map((d) => {
         const code = d.code?.toUpperCase() === "MEDIA" ? "MEDPUB" : d.code;
         return {
           ...d,
