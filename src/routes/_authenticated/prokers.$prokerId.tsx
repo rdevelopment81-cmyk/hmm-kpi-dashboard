@@ -72,8 +72,6 @@ const COMMON_SEKSI_SUGGESTIONS = [
   "PDD (Publikasi, Dekorasi & Dokumentasi)",
   "Perlengkapan",
   "Konsumsi",
-  "Sponsor & Fundraiser",
-  "Keamanan",
 ];
 
 function ProkerDetailPage() {
