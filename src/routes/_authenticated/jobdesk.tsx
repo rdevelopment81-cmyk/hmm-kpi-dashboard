@@ -140,7 +140,7 @@ function JobdeskPage() {
                   <p className="mt-1 text-sm text-muted-foreground">{j.description}</p>
                 )}
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Oleh {j.profiles?.full_name} · Deadline {j.deadline ?? "—"}
+                  {j.profiles?.full_name} · Deadline {j.deadline ?? "—"}
                 </p>
                 {j.review_note && (
                   <p className="mt-1 text-xs italic text-muted-foreground">
