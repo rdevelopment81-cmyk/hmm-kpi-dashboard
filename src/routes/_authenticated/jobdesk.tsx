@@ -58,7 +58,7 @@ function JobdeskPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("jobdesks")
-        .select("*, profiles(full_name, avatar_url), divisions(code,name), prokers(name)")
+        .select("*, profiles(full_name, avatar_url, phone_number), divisions(code,name), prokers(name)")
         .order("created_at", { ascending: false });
       return data ?? [];
     },
@@ -87,6 +87,18 @@ function JobdeskPage() {
     },
     onSuccess: () => {
       toast.success("Status diperbarui");
+      qc.invalidateQueries({ queryKey: ["jobdesks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteJobdeskMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("jobdesks").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Jobdesk berhasil dihapus");
       qc.invalidateQueries({ queryKey: ["jobdesks"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -136,6 +148,36 @@ function JobdeskPage() {
                   {j.divisions && !j.prokers && <Badge variant="outline">{j.divisions.code}</Badge>}
                   {j.seksi_name && <Badge variant="outline">{j.seksi_name}</Badge>}
                   {j.prokers && <Badge variant="secondary">{j.prokers.name}</Badge>}
+                  
+                  {canReviewThis && j.profiles?.phone_number && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-[10px] px-2 ml-1 bg-green-500/10 text-green-700 hover:bg-green-500/20 hover:text-green-800 border-green-500/20"
+                      onClick={() => {
+                        const msg = `Halo ${j.profiles.full_name}, kamu mendapat tugas baru:\n\n*${j.title}*\nWaktu: ${j.timing || '-'}\nTenggat Waktu: ${j.deadline || '-'}\n\nSilakan cek website untuk detailnya ya!`;
+                        let phone = j.profiles.phone_number;
+                        if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+                      }}
+                    >
+                      Beri Tahu via WA
+                    </Button>
+                  )}
+                  {canReviewThis && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 ml-1 text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        if (confirm("Hapus jobdesk ini?")) {
+                          deleteJobdeskMut.mutate(j.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
                 {j.description && (
                   <p className="mt-1 text-sm text-muted-foreground">{j.description}</p>
