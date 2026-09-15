@@ -928,6 +928,18 @@ function SeksiDetailDialog({
   const isKoordinatorOfThisSeksi = koordinator?.profile_id === user?.userId;
   const canManageSeksi = canManage || isKoordinatorOfThisSeksi;
 
+  const deleteJobdeskMut = useMutation({
+    mutationFn: async (jobdeskId: string) => {
+      const { error } = await supabase.from("jobdesks").delete().eq("id", jobdeskId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Jobdesk berhasil dihapus");
+      qc.invalidateQueries({ queryKey: ["seksi_jobdesks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0 overflow-hidden">
@@ -1065,6 +1077,20 @@ function SeksiDetailDialog({
                                 }}
                               >
                                 Beri Tahu via WA
+                              </Button>
+                            )}
+                            {canManageSeksi && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 ml-1 text-muted-foreground hover:text-destructive"
+                                onClick={() => {
+                                  if (confirm("Hapus jobdesk ini?")) {
+                                    deleteJobdeskMut.mutate(j.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             )}
                           </div>
