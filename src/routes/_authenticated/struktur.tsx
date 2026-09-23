@@ -233,7 +233,7 @@ function StrukturOrganisasiPage() {
             </div>
 
             {/* KETUA */}
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col items-center">
               {ketua ? (
                 <OrgNode
                   name={ketua.full_name}
@@ -244,58 +244,103 @@ function StrukturOrganisasiPage() {
               ) : (
                 <EmptyOrgNode jabatan="Ketua Umum" isBph />
               )}
+              {/* Line from Ketum to the horizontal branch */}
+              <div className="h-8 w-[2px] bg-border" />
             </div>
 
-            {/* CONNECTOR KETUA -> WAKIL */}
-            <div className="h-6 w-[2px] bg-border" />
+            {/* HORIZONTAL BRANCH (SEKUM - WAKETUM - BENDUM) */}
+            <div className="relative flex w-full max-w-4xl justify-between">
+              {/* SEKUM BRANCH */}
+              <div className="relative flex flex-1 flex-col items-center pt-8">
+                <div className="absolute top-0 right-0 h-[2px] w-[50%] bg-border" />
+                <div className="absolute top-0 h-8 w-[2px] bg-border" />
+                {finalSek1 ? (
+                  <OrgNode
+                    name={finalSek1.full_name}
+                    jabatan={finalSek1.jabatan || "Sekretaris Umum"}
+                    avatarUrl={finalSek1.avatar_url}
+                    isBph
+                  />
+                ) : (
+                  <EmptyOrgNode jabatan="Sekretaris Umum" isBph />
+                )}
+                <div className="h-6 w-[2px] bg-border" />
+                {finalSek2 ? (
+                  <OrgNode
+                    name={finalSek2.full_name}
+                    jabatan={finalSek2.jabatan || "Wakil Sekretaris Umum"}
+                    avatarUrl={finalSek2.avatar_url}
+                    isBph
+                  />
+                ) : (
+                  <EmptyOrgNode jabatan="Wakil Sekretaris Umum" isBph />
+                )}
+              </div>
 
-            {/* WAKIL */}
-            <div className="relative z-10 flex flex-col items-center">
-              {finalWakil1 ? (
-                <OrgNode
-                  name={finalWakil1.full_name}
-                  jabatan={finalWakil1.jabatan || "Wakil Ketua Umum 1"}
-                  avatarUrl={finalWakil1.avatar_url}
-                  isBph
-                />
-              ) : (
-                <EmptyOrgNode jabatan="Wakil Ketua Umum 1" isBph />
-              )}
-            </div>
+              {/* WAKETUM BRANCH */}
+              <div className="relative flex flex-1 flex-col items-center pt-8">
+                <div className="absolute top-0 right-0 left-0 h-[2px] bg-border" />
+                <div className="absolute top-0 h-8 w-[2px] bg-border" />
+                {finalWakil1 ? (
+                  <OrgNode
+                    name={finalWakil1.full_name}
+                    jabatan={finalWakil1.jabatan || "Wakil Ketua Umum"}
+                    avatarUrl={finalWakil1.avatar_url}
+                    isBph
+                  />
+                ) : (
+                  <EmptyOrgNode jabatan="Wakil Ketua Umum" isBph />
+                )}
+                {/* Line going straight down to Kadivs */}
+                <div className="h-16 w-[2px] bg-border" />
+              </div>
 
-            {/* CONNECTOR WAKIL -> SEKRETARIS & BENDAHARA */}
-            <div className="h-6 w-[2px] bg-border" />
-
-            {/* SEKRETARIS & BENDAHARA */}
-            <div className="flex flex-wrap justify-center gap-6">
-              {[
-                { p: finalSek1, defaultTitle: "Sekretaris Umum 1" },
-                { p: finalSek2, defaultTitle: "Sekretaris Umum 2" },
-                { p: finalBen1, defaultTitle: "Bendahara Umum 1" },
-                { p: finalBen2, defaultTitle: "Bendahara Umum 2" },
-              ].map((item, idx) => (
-                <div key={idx}>
-                  {item.p ? (
-                    <OrgNode
-                      name={item.p.full_name}
-                      jabatan={item.p.jabatan || item.defaultTitle}
-                      avatarUrl={item.p.avatar_url}
-                      isBph
-                    />
-                  ) : (
-                    <EmptyOrgNode jabatan={item.defaultTitle} isBph />
-                  )}
-                </div>
-              ))}
+              {/* BENDUM BRANCH */}
+              <div className="relative flex flex-1 flex-col items-center pt-8">
+                <div className="absolute top-0 left-0 h-[2px] w-[50%] bg-border" />
+                <div className="absolute top-0 h-8 w-[2px] bg-border" />
+                {finalBen1 ? (
+                  <OrgNode
+                    name={finalBen1.full_name}
+                    jabatan={finalBen1.jabatan || "Bendahara Umum"}
+                    avatarUrl={finalBen1.avatar_url}
+                    isBph
+                  />
+                ) : (
+                  <EmptyOrgNode jabatan="Bendahara Umum" isBph />
+                )}
+                <div className="h-6 w-[2px] bg-border" />
+                {finalBen2 ? (
+                  <OrgNode
+                    name={finalBen2.full_name}
+                    jabatan={finalBen2.jabatan || "Wakil Bendahara Umum"}
+                    avatarUrl={finalBen2.avatar_url}
+                    isBph
+                  />
+                ) : (
+                  <EmptyOrgNode jabatan="Wakil Bendahara Umum" isBph />
+                )}
+              </div>
             </div>
           </div>
 
           {/* DIVISIONS SECTION */}
           {orgData.divisions.length > 0 && (
-            <div className="mt-8 w-full border-t-2 border-dashed border-border pt-16">
-              <div className="flex gap-12 px-8">
-                {orgData.divisions.map((div: any) => (
-                  <div key={div.id} className="flex min-w-[200px] flex-col items-center">
+            <div className="relative mt-0 flex w-full flex-col items-center">
+              <div className="flex w-full justify-center gap-12 px-8">
+                {orgData.divisions.map((div: any, idx: number, arr: any[]) => (
+                  <div key={div.id} className="relative flex min-w-[200px] flex-col items-center pt-8">
+                    {/* Horizontal Branch for Kadivs */}
+                    {arr.length > 1 && (
+                      <>
+                        {idx === 0 && <div className="absolute top-0 right-0 h-[2px] w-[50%] bg-border" />}
+                        {idx === arr.length - 1 && <div className="absolute top-0 left-0 h-[2px] w-[50%] bg-border" />}
+                        {idx > 0 && idx < arr.length - 1 && <div className="absolute top-0 right-0 left-0 h-[2px] bg-border" />}
+                      </>
+                    )}
+                    {/* Vertical line connecting up to the horizontal branch */}
+                    <div className="absolute top-0 h-8 w-[2px] bg-border" />
+
                     <h3 className="mb-6 rounded-full bg-primary/10 px-4 py-1 text-sm font-semibold text-primary">
                       Divisi {div.code}
                     </h3>
