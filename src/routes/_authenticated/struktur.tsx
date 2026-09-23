@@ -132,7 +132,6 @@ function StrukturOrganisasiPage() {
       const bphOrder = [
         "Ketua Umum",
         "Wakil Ketua Umum 1",
-        "Wakil Ketua Umum 2",
         "Sekretaris Umum 1",
         "Sekretaris Umum 2",
         "Bendahara Umum 1",
@@ -180,17 +179,11 @@ function StrukturOrganisasiPage() {
       p.jabatan?.toLowerCase().includes("wakil ketua umum 1") ||
       p.jabatan?.toLowerCase() === "wakil ketua umum 1",
   );
-  const wakil2 = bphList.find(
-    (p) =>
-      p.jabatan?.toLowerCase().includes("wakil ketua umum 2") ||
-      p.jabatan?.toLowerCase() === "wakil ketua umum 2",
-  );
   const otherWakils = bphList.filter(
     (p) =>
-      p.jabatan?.toLowerCase().includes("wakil") && p !== ketua && p !== wakil1 && p !== wakil2,
+      p.jabatan?.toLowerCase().includes("wakil") && p !== ketua && p !== wakil1,
   );
   const finalWakil1 = wakil1 || otherWakils[0];
-  const finalWakil2 = wakil2 || otherWakils[1];
 
   const sek1 = bphList.find(
     (p) =>
@@ -253,41 +246,24 @@ function StrukturOrganisasiPage() {
               )}
             </div>
 
-            {/* CONNECTOR KETUA -> WAKILS */}
+            {/* CONNECTOR KETUA -> WAKIL */}
             <div className="h-6 w-[2px] bg-border" />
 
-            {/* WAKILS */}
-            <div className="relative z-10 flex gap-12">
-              <div className="absolute -top-6 right-[25%] left-[25%] z-0 h-[2px] bg-border" />
-              <div className="relative flex flex-col items-center">
-                <div className="absolute -top-6 z-0 h-6 w-[2px] bg-border" />
-                {finalWakil1 ? (
-                  <OrgNode
-                    name={finalWakil1.full_name}
-                    jabatan={finalWakil1.jabatan || "Wakil Ketua Umum 1"}
-                    avatarUrl={finalWakil1.avatar_url}
-                    isBph
-                  />
-                ) : (
-                  <EmptyOrgNode jabatan="Wakil Ketua Umum 1" isBph />
-                )}
-              </div>
-              <div className="relative flex flex-col items-center">
-                <div className="absolute -top-6 z-0 h-6 w-[2px] bg-border" />
-                {finalWakil2 ? (
-                  <OrgNode
-                    name={finalWakil2.full_name}
-                    jabatan={finalWakil2.jabatan || "Wakil Ketua Umum 2"}
-                    avatarUrl={finalWakil2.avatar_url}
-                    isBph
-                  />
-                ) : (
-                  <EmptyOrgNode jabatan="Wakil Ketua Umum 2" isBph />
-                )}
-              </div>
+            {/* WAKIL */}
+            <div className="relative z-10 flex flex-col items-center">
+              {finalWakil1 ? (
+                <OrgNode
+                  name={finalWakil1.full_name}
+                  jabatan={finalWakil1.jabatan || "Wakil Ketua Umum 1"}
+                  avatarUrl={finalWakil1.avatar_url}
+                  isBph
+                />
+              ) : (
+                <EmptyOrgNode jabatan="Wakil Ketua Umum 1" isBph />
+              )}
             </div>
 
-            {/* CONNECTOR WAKILS -> SEKRETARIS & BENDAHARA */}
+            {/* CONNECTOR WAKIL -> SEKRETARIS & BENDAHARA */}
             <div className="h-6 w-[2px] bg-border" />
 
             {/* SEKRETARIS & BENDAHARA */}
