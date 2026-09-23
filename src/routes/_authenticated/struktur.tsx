@@ -131,7 +131,7 @@ function StrukturOrganisasiPage() {
       // Sort BPH by custom priority
       const bphOrder = [
         "Ketua Umum",
-        "Wakil Ketua Umum 1",
+        "Wakil Ketua Umum",
         "Sekretaris Umum 1",
         "Sekretaris Umum 2",
         "Bendahara Umum 1",
@@ -176,8 +176,8 @@ function StrukturOrganisasiPage() {
 
   const wakil1 = bphList.find(
     (p) =>
-      p.jabatan?.toLowerCase().includes("wakil ketua umum 1") ||
-      p.jabatan?.toLowerCase() === "wakil ketua umum 1",
+      p.jabatan?.toLowerCase().includes("wakil ketua umum") ||
+      p.jabatan?.toLowerCase() === "wakil ketua umum",
   );
   const otherWakils = bphList.filter(
     (p) =>
@@ -257,23 +257,23 @@ function StrukturOrganisasiPage() {
                 {finalSek1 ? (
                   <OrgNode
                     name={finalSek1.full_name}
-                    jabatan={finalSek1.jabatan || "Sekretaris Umum"}
+                    jabatan={finalSek1.jabatan || "Sekretaris Umum 1"}
                     avatarUrl={finalSek1.avatar_url}
                     isBph
                   />
                 ) : (
-                  <EmptyOrgNode jabatan="Sekretaris Umum" isBph />
+                  <EmptyOrgNode jabatan="Sekretaris Umum 1" isBph />
                 )}
                 <div className="h-6 w-[2px] bg-border" />
                 {finalSek2 ? (
                   <OrgNode
                     name={finalSek2.full_name}
-                    jabatan={finalSek2.jabatan || "Wakil Sekretaris Umum"}
+                    jabatan={finalSek2.jabatan || "Sekretaris Umum 2"}
                     avatarUrl={finalSek2.avatar_url}
                     isBph
                   />
                 ) : (
-                  <EmptyOrgNode jabatan="Wakil Sekretaris Umum" isBph />
+                  <EmptyOrgNode jabatan="Sekretaris Umum 2" isBph />
                 )}
               </div>
 

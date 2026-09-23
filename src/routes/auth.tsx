@@ -33,7 +33,7 @@ const POSISI_LIST = [
   { id: "anggota", label: "Anggota Divisi", role: "anggota" },
   { id: "kadiv", label: "Kepala Divisi", role: "kadiv" },
   { id: "Ketua Umum", label: "Ketua Umum", role: "bph" },
-  { id: "Wakil ketua umum 1", label: "Wakil ketua umum 1", role: "bph" },
+  { id: "Wakil Ketua Umum", label: "Wakil Ketua Umum", role: "bph" },
   { id: "Sekertaris Umum 1", label: "Sekertaris Umum 1", role: "bph" },
   { id: "Sekertaris Umum 2", label: "Sekertaris Umum 2", role: "bph" },
   { id: "Bendahara Umum 1", label: "Bendahara Umum 1", role: "bph" },
