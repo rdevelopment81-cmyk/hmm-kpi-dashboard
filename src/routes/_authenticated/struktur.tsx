@@ -111,6 +111,7 @@ function StrukturOrganisasiPage() {
           uRoles.includes("bph") ||
           p.jabatan?.toLowerCase().includes("ketua") ||
           p.jabatan?.toLowerCase().includes("sekretaris") ||
+          p.jabatan?.toLowerCase().includes("sekertaris") ||
           p.jabatan?.toLowerCase().includes("bendahara");
         const isRND = pDivCode === "RND" || p.divisions?.name?.toLowerCase().includes("research");
         const isKadivRole =
@@ -133,7 +134,9 @@ function StrukturOrganisasiPage() {
         "Ketua Umum",
         "Wakil Ketua Umum",
         "Sekretaris Umum 1",
+        "Sekertaris Umum 1",
         "Sekretaris Umum 2",
+        "Sekertaris Umum 2",
         "Bendahara Umum 1",
         "Bendahara Umum 2",
       ];
@@ -185,19 +188,28 @@ function StrukturOrganisasiPage() {
   );
   const finalWakil1 = wakil1 || otherWakils[0];
 
-  const sek1 = bphList.find(
-    (p) =>
-      p.jabatan?.toLowerCase().includes("sekretaris umum 1") ||
-      p.jabatan?.toLowerCase().includes("sekretaris 1"),
-  );
-  const sek2 = bphList.find(
-    (p) =>
-      p.jabatan?.toLowerCase().includes("sekretaris umum 2") ||
-      p.jabatan?.toLowerCase().includes("sekretaris 2"),
-  );
-  const otherSeks = bphList.filter(
-    (p) => p.jabatan?.toLowerCase().includes("sekretaris") && p !== sek1 && p !== sek2,
-  );
+  const sek1 = bphList.find((p) => {
+    const j = p.jabatan?.toLowerCase() || "";
+    return (
+      j.includes("sekretaris umum 1") ||
+      j.includes("sekertaris umum 1") ||
+      j.includes("sekretaris 1") ||
+      j.includes("sekertaris 1")
+    );
+  });
+  const sek2 = bphList.find((p) => {
+    const j = p.jabatan?.toLowerCase() || "";
+    return (
+      j.includes("sekretaris umum 2") ||
+      j.includes("sekertaris umum 2") ||
+      j.includes("sekretaris 2") ||
+      j.includes("sekertaris 2")
+    );
+  });
+  const otherSeks = bphList.filter((p) => {
+    const j = p.jabatan?.toLowerCase() || "";
+    return (j.includes("sekretaris") || j.includes("sekertaris")) && p !== sek1 && p !== sek2;
+  });
   const finalSek1 = sek1 || otherSeks[0];
   const finalSek2 = sek2 || otherSeks[1];
 
@@ -257,7 +269,7 @@ function StrukturOrganisasiPage() {
                 {finalSek1 ? (
                   <OrgNode
                     name={finalSek1.full_name}
-                    jabatan={finalSek1.jabatan || "Sekretaris Umum 1"}
+                    jabatan="Sekretaris Umum 1"
                     avatarUrl={finalSek1.avatar_url}
                     isBph
                   />
@@ -268,7 +280,7 @@ function StrukturOrganisasiPage() {
                 {finalSek2 ? (
                   <OrgNode
                     name={finalSek2.full_name}
-                    jabatan={finalSek2.jabatan || "Sekretaris Umum 2"}
+                    jabatan="Sekretaris Umum 2"
                     avatarUrl={finalSek2.avatar_url}
                     isBph
                   />
