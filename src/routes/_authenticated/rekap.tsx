@@ -20,6 +20,28 @@ export const Route = createFileRoute("/_authenticated/rekap")({
   head: () => ({ meta: [{ title: "Rekap KPI — HMM FEB UNPAK" }] }),
 });
 
+function getKesimpulan(score: number): { label: string; className: string } {
+  if (score >= 70) {
+    return {
+      label: "Hijau",
+      className:
+        "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800",
+    };
+  } else if (score >= 40) {
+    return {
+      label: "Kuning",
+      className:
+        "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800",
+    };
+  } else {
+    return {
+      label: "Merah",
+      className:
+        "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-300 dark:border-rose-800",
+    };
+  }
+}
+
 function RekapPage() {
   const { data: user } = useCurrentUser();
   const [divisionId, setDivisionId] = useState<string>("all");
@@ -61,7 +83,16 @@ function RekapPage() {
   }, [profiles, kpiMap, divisionId]);
 
   function exportCSV() {
-    const header = ["Nama", "NIM", "Divisi", "Jabatan", "Kehadiran%", "Jobdesk%", "Skor KPI"];
+    const header = [
+      "Nama",
+      "NIM",
+      "Divisi",
+      "Jabatan",
+      "Kehadiran%",
+      "Jobdesk%",
+      "Skor KPI",
+      "Kesimpulan",
+    ];
     const csv = [header.join(",")]
       .concat(
         rows.map((r: any) =>
@@ -73,6 +104,7 @@ function RekapPage() {
             r.kpi?.attendance_pct ?? 0,
             r.kpi?.jobdesk_pct ?? 0,
             r.kpi?.kpi_score ?? 0,
+            JSON.stringify(getKesimpulan(r.kpi?.kpi_score ?? 0).label),
           ].join(","),
         ),
       )
@@ -131,29 +163,40 @@ function RekapPage() {
                   <th className="p-3 text-right">Kehadiran</th>
                   <th className="p-3 text-right">Jobdesk</th>
                   <th className="p-3 text-right">Skor KPI</th>
+                  <th className="p-3 text-center">Kesimpulan</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r: any, i: number) => (
-                  <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                    <td className="p-3 text-muted-foreground">{i + 1}</td>
-                    <td className="p-3">
-                      <p className="font-medium">{r.full_name || "(tanpa nama)"}</p>
-                      <p className="text-xs text-muted-foreground">{r.nim || "—"}</p>
-                    </td>
-                    <td className="p-3">
-                      <Badge variant="outline">{r.divisions?.code ?? "-"}</Badge>
-                    </td>
-                    <td className="p-3 text-right">{r.kpi?.attendance_pct ?? 0}%</td>
-                    <td className="p-3 text-right">{r.kpi?.jobdesk_pct ?? 0}%</td>
-                    <td className="p-3 text-right font-bold text-primary">
-                      {r.kpi?.kpi_score ?? 0}
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((r: any, i: number) => {
+                  const kesimpulan = getKesimpulan(r.kpi?.kpi_score ?? 0);
+                  return (
+                    <tr key={r.id} className="border-t border-border hover:bg-muted/30">
+                      <td className="p-3 text-muted-foreground">{i + 1}</td>
+                      <td className="p-3">
+                        <p className="font-medium">{r.full_name || "(tanpa nama)"}</p>
+                        <p className="text-xs text-muted-foreground">{r.nim || "—"}</p>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline">{r.divisions?.code ?? "-"}</Badge>
+                      </td>
+                      <td className="p-3 text-right">{r.kpi?.attendance_pct ?? 0}%</td>
+                      <td className="p-3 text-right">{r.kpi?.jobdesk_pct ?? 0}%</td>
+                      <td className="p-3 text-right font-bold text-primary">
+                        {r.kpi?.kpi_score ?? 0}
+                      </td>
+                      <td className="p-3 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${kesimpulan.className}`}
+                        >
+                          {kesimpulan.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={7} className="p-8 text-center text-sm text-muted-foreground">
                       Tidak ada data.
                     </td>
                   </tr>
