@@ -1,0 +1,60 @@
+{
+  "id": "/",
+  "name": "HMM KPI — FEB Universitas Pakuan",
+  "short_name": "HMM KPI",
+  "description": "Sistem Penilaian KPI, Absensi RFID Rapat, dan Jobdesk Pengurus HMM FEB UNPAK",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "orientation": "any",
+  "background_color": "#002570",
+  "theme_color": "#002570",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": ["productivity", "education", "business"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Absensi Rapat",
+      "short_name": "Absensi",
+      "description": "Scan atau tap kartu RFID untuk absensi rapat",
+      "url": "/absensi",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Rekap Nilai KPI",
+      "short_name": "Rekap KPI",
+      "description": "Lihat rekapitulasi skor KPI seluruh anggota",
+      "url": "/rekap",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Daftar Jobdesk",
+      "short_name": "Jobdesk",
+      "description": "Lihat dan kumpulkan jobdesk proker & divisi",
+      "url": "/jobdesk",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
+
