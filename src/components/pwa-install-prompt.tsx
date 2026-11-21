@@ -17,7 +17,7 @@ export function PwaInstallPrompt() {
     // 1. Check if already installed / in standalone mode
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 
     if (isStandalone) {
       return;
@@ -108,7 +108,8 @@ export function PwaInstallPrompt() {
             <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <span>Pasang Aplikasi HMM KPI</span>
               <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                <Smartphone className="h-2.5 w-2.5" /> HP & <Laptop className="h-2.5 w-2.5" /> Laptop
+                <Smartphone className="h-2.5 w-2.5" /> HP & <Laptop className="h-2.5 w-2.5" />{" "}
+                Laptop
               </span>
             </h4>
             <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
@@ -167,4 +168,3 @@ export function PwaInstallPrompt() {
     </div>
   );
 }
-

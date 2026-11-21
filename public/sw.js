@@ -7,7 +7,7 @@ const STATIC_ASSETS = [
   "/pwa-512x512.png",
   "/maskable-icon-512x512.png",
   "/apple-touch-icon.png",
-  "/favicon.ico"
+  "/favicon.ico",
 ];
 
 // 1. Install event: cache core static assets
@@ -17,7 +17,7 @@ self.addEventListener("install", (event) => {
       return cache.addAll(STATIC_ASSETS).catch((err) => {
         console.warn("[SW] Cache addAll warning:", err);
       });
-    })
+    }),
   );
   self.skipWaiting();
 });
@@ -31,9 +31,9 @@ self.addEventListener("activate", (event) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
-        })
+        }),
       );
-    })
+    }),
   );
   self.clients.claim();
 });
@@ -44,7 +44,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   // Skip non-GET requests and Supabase REST/Auth API requests
-  if (req.method !== "GET" || url.pathname.includes("/rest/v1") || url.pathname.includes("/auth/v1")) {
+  if (
+    req.method !== "GET" ||
+    url.pathname.includes("/rest/v1") ||
+    url.pathname.includes("/auth/v1")
+  ) {
     return;
   }
 
@@ -78,7 +82,7 @@ self.addEventListener("fetch", (event) => {
           }
           return networkResponse;
         });
-      })
+      }),
     );
     return;
   }
@@ -94,7 +98,7 @@ self.addEventListener("fetch", (event) => {
           return caches.match(req).then((cached) => {
             return cached || caches.match("/");
           });
-        })
+        }),
     );
     return;
   }
@@ -103,13 +107,17 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(req).catch(() => {
       return caches.match(req);
-    })
+    }),
   );
 });
 
 // 4. Push notifications support
 self.addEventListener("push", (event) => {
-  let data = { title: "HMM KPI — Notifikasi", body: "Ada pembaruan kegiatan di HMM FEB UNPAK.", url: "/" };
+  let data = {
+    title: "HMM KPI — Notifikasi",
+    body: "Ada pembaruan kegiatan di HMM FEB UNPAK.",
+    url: "/",
+  };
   if (event.data) {
     try {
       data = { ...data, ...event.data.json() };
@@ -124,8 +132,8 @@ self.addEventListener("push", (event) => {
     badge: "/pwa-192x192.png",
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || "/"
-    }
+      url: data.url || "/",
+    },
   };
 
   event.waitUntil(self.registration.showNotification(data.title, options));
@@ -147,7 +155,6 @@ self.addEventListener("notificationclick", (event) => {
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }
-    })
+    }),
   );
 });
-
