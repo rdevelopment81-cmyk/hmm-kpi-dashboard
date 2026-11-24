@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { CreditCard, ScanLine, Search, Trash2 } from "lucide-react";
+import { CreditCard, ScanLine, Search, Trash2, UserCheck, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/anggota")({
   component: AnggotaPage,
@@ -129,6 +129,18 @@ function AnggotaPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const activateProfile = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("profiles").update({ status: "aktif" }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Akun anggota berhasil diaktifkan!");
+      qc.invalidateQueries({ queryKey: ["profiles-list"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const filtered = (profiles ?? [])
     .filter(
       (p: any) =>
@@ -187,6 +199,15 @@ function AnggotaPage() {
                     <div className="mt-1 flex flex-wrap gap-1">
                       <Badge variant="outline">{p.divisions?.code ?? "Belum ada divisi"}</Badge>
                       <Badge>{currentRole}</Badge>
+                      {p.status === "pending" ? (
+                        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300">
+                          Pending Verifikasi
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300">
+                          Aktif
+                        </Badge>
+                      )}
                       {p.id_kartu && (
                         <Badge variant="secondary" className="gap-1">
                           <CreditCard className="h-3 w-3" /> {p.id_kartu}
@@ -197,6 +218,17 @@ function AnggotaPage() {
                 </div>
                 {isHR && (
                   <div className="flex flex-wrap gap-2 md:justify-end">
+                    {p.status === "pending" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full md:w-auto text-emerald-600 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                        onClick={() => activateProfile.mutate(p.id)}
+                        disabled={activateProfile.isPending}
+                      >
+                        <UserCheck className="mr-1 h-4 w-4" /> Aktifkan Akun
+                      </Button>
+                    )}
                     <Input
                       placeholder="NPM"
                       defaultValue={p.nim ?? ""}
@@ -262,22 +294,34 @@ function AnggotaPage() {
                       <ScanLine className="mr-1 h-4 w-4" />{" "}
                       {p.id_kartu ? "Ganti Kartu RFID" : "Daftarkan Kartu RFID"}
                     </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="w-full md:w-auto"
-                      onClick={() => {
-                        if (
-                          confirm(
-                            `Apakah Anda yakin ingin menghapus ${p.full_name || "anggota ini"}?`,
-                          )
-                        ) {
-                          deleteProfile.mutate(p.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="mr-1 h-4 w-4" /> Hapus
-                    </Button>
+                    {p.id === user?.userId ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled
+                        className="w-full md:w-auto opacity-50 cursor-not-allowed"
+                        title="Tidak dapat menghapus akun sendiri"
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" /> Hapus
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full md:w-auto"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `PERINGATAN: Apakah Anda yakin ingin menghapus ${p.full_name || "anggota ini"}?\n\nTindakan ini akan menghapus akun dan semua catatan terkait secara permanen.`,
+                            )
+                          ) {
+                            deleteProfile.mutate(p.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" /> Hapus
+                      </Button>
+                    )}
                   </div>
                 )}
                 {!isHR && (

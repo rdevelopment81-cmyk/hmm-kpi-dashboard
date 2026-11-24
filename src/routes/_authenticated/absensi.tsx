@@ -41,14 +41,12 @@ function AbsensiPage() {
   const canUse = user?.roles.some((r) => r === "hr_admin" || r === "kadiv" || r === "dewan_kegiatan");
 
   const { data: meetings } = useQuery({
-    queryKey: ["meetings-today"],
+    queryKey: ["meetings-active-list"],
     queryFn: async () => {
-      const today = new Date().toISOString().slice(0, 10);
       const { data } = await supabase
         .from("meetings")
         .select("id,title,meeting_date,start_time,division_id,divisions(code)")
-        .gte("meeting_date", today)
-        .order("meeting_date", { ascending: true })
+        .order("meeting_date", { ascending: false })
         .limit(50);
       return data ?? [];
     },

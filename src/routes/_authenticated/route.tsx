@@ -69,9 +69,9 @@ const NAV: NavItem[] = [
   },
   {
     to: "/pengaturan",
-    label: "Pengaturan KPI",
+    label: "Pengaturan & Profil",
     icon: Settings,
-    show: (r) => r.includes("hr_admin"),
+    show: () => true,
   },
 ];
 
@@ -144,7 +144,11 @@ function AuthedLayout() {
           })}
         </nav>
         <div className="border-t border-sidebar-border p-3">
-          <div className="mb-3 flex items-center gap-3 rounded-md bg-sidebar-accent/40 p-2">
+          <Link
+            to="/pengaturan"
+            className="mb-3 flex items-center gap-3 rounded-md bg-sidebar-accent/40 p-2 transition hover:bg-sidebar-accent cursor-pointer"
+            title="Pengaturan Profil & Sandi"
+          >
             <Avatar className="h-9 w-9">
               <AvatarImage src={user.profile?.avatar_url ?? undefined} />
               <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
@@ -160,7 +164,8 @@ function AuthedLayout() {
                 {user.division ? ` · ${user.division.code}` : ""}
               </p>
             </div>
-          </div>
+            <Settings className="h-4 w-4 opacity-50 shrink-0" />
+          </Link>
           <Button
             variant="ghost"
             onClick={signOut}
