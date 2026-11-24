@@ -14,6 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -50,6 +57,10 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [divisionId, setDivisionId] = useState<string>("");
   const [posisiKey, setPosisiKey] = useState<string>("anggota");
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const { data: rawDivisions } = useQuery({
     queryKey: ["divisions-public"],
@@ -67,10 +78,33 @@ function AuthPage() {
   }, [rawDivisions]);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
+      navigate({ to: "/reset-password", replace: true });
+      return;
+    }
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast.error("Masukkan alamat email yang terdaftar");
+      return;
+    }
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setResetSent(true);
+    toast.success("Tautan reset kata sandi telah dikirim!");
+  }
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -193,7 +227,20 @@ function AuthPage() {
                     />
                   </div>
                   <div>
-                    <Label>Password</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label>Password</Label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResetEmail(email);
+                          setResetSent(false);
+                          setForgotOpen(true);
+                        }}
+                        className="text-xs text-primary hover:underline font-medium cursor-pointer"
+                      >
+                        Lupa password?
+                      </button>
+                    </div>
                     <Input
                       type="password"
                       required
@@ -300,6 +347,72 @@ function AuthPage() {
             </Tabs>
           </CardContent>
         </Card>
+
+        <Dialog
+          open={forgotOpen}
+          onOpenChange={(open) => {
+            setForgotOpen(open);
+            if (!open) setResetSent(false);
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Lupa Kata Sandi</DialogTitle>
+              <DialogDescription>
+                Masukkan alamat email akun HMM Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi.
+              </DialogDescription>
+            </DialogHeader>
+
+            {resetSent ? (
+              <div className="space-y-4 py-2">
+                <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 text-sm text-emerald-800 dark:text-emerald-300">
+                  <p className="font-semibold mb-1">Tautan Reset Terkirim!</p>
+                  <p className="text-xs">
+                    Silakan periksa kotak masuk (inbox) atau folder spam pada email{" "}
+                    <b>{resetEmail}</b>. Klik tautan tersebut untuk membuat kata sandi baru.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={() => {
+                    setForgotOpen(false);
+                    setResetSent(false);
+                  }}
+                >
+                  Tutup
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4 py-2">
+                <div>
+                  <Label htmlFor="reset-email">Email Terdaftar</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    required
+                    placeholder="nama@email.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setForgotOpen(false)}
+                    disabled={resetLoading}
+                  >
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={resetLoading}>
+                    {resetLoading ? "Mengirim..." : "Kirim Tautan Reset"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
