@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ScanLine,
   ClipboardCheck,
@@ -13,6 +14,12 @@ import {
   Users,
   FolderKanban,
   ArrowRight,
+  ClipboardList,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Building2,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { STATUS_MAP } from "@/routes/_authenticated/prokers";
@@ -38,11 +45,26 @@ function Dashboard() {
         <p className="text-sm text-muted-foreground">Ringkasan kinerja Anda dan divisi terkait.</p>
       </div>
 
+      {/* 3 Kartu KPI Pribadi untuk semua role */}
       <PersonalKPI userId={user.userId} />
 
+      {/* Jika BPH / HR Admin: Tampilkan Ringkasan Proker */}
       {isStaff && <ProkerSummary />}
 
-      {(isStaff || isKadiv) && <DivisionOverview isStaff={isStaff} />}
+      {/* Jika Pimpinan (BPH & Kadiv): Tampilkan Analisis Rata-rata 9 Divisi */}
+      {isStaff || isKadiv ? (
+        <DivisionOverview isStaff={isStaff} />
+      ) : (
+        /* Tampilan Khusus Anggota: Divisi Saya, Jobdesk Pending, dan Rapat Terdekat */
+        <div className="space-y-6">
+          <MyDivisionCard user={user} />
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <MyPendingJobdesks userId={user.userId} />
+            <MyUpcomingMeetings divisionId={user.profile?.division_id ?? null} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -118,6 +140,359 @@ function PersonalKPI({ userId }: { userId: string }) {
   );
 }
 
+/* ========================================================
+   KOMPONEN KHUSUS ANGGOTA: 1. Kartu "Divisi Saya"
+======================================================== */
+function MyDivisionCard({ user }: { user: any }) {
+  const divisionId = user.profile?.division_id;
+
+  const { data: divInfo, isLoading } = useQuery({
+    queryKey: ["myDivisionInfo", divisionId],
+    enabled: !!divisionId,
+    queryFn: async () => {
+      if (!divisionId) return null;
+      const { data: members, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, jabatan, nim")
+        .eq("division_id", divisionId)
+        .order("full_name");
+      if (error) throw error;
+
+      const scores = await Promise.all(
+        (members ?? []).map(async (m: { id: string }) => {
+          const { data } = await supabase.rpc("calculate_kpi", { _profile_id: m.id });
+          return (data as any)?.kpi_score ?? 0;
+        }),
+      );
+
+      const sum = scores.reduce((acc, curr) => acc + curr, 0);
+      const avg = scores.length > 0 ? Math.round(sum / scores.length) : 0;
+
+      return {
+        members: members ?? [],
+        avgKpi: avg,
+        totalMembers: members?.length ?? 0,
+      };
+    },
+  });
+
+  if (!divisionId) {
+    return (
+      <Card className="border-dashed">
+        <CardContent className="p-6 flex items-center gap-4">
+          <div className="grid h-12 w-12 place-items-center rounded-xl bg-muted text-muted-foreground">
+            <Building2 className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-base">Belum Terdaftar di Divisi</h3>
+            <p className="text-sm text-muted-foreground">
+              Anda belum ditetapkan ke dalam divisi tertentu. Hubungi HR Admin atau Kepala Divisi
+              untuk penetapan divisi Anda.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const avgKpi = divInfo?.avgKpi ?? 0;
+  const isGood = avgKpi >= 70;
+  const isWarning = avgKpi >= 40 && avgKpi < 70;
+
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="bg-muted/30 pb-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">
+                Divisi Saya — {user.division?.name || "Divisi Terdaftar"}
+              </CardTitle>
+              <CardDescription>
+                Informasi perkembangan tim dan rekan satu divisi Anda.
+              </CardDescription>
+            </div>
+          </div>
+          <Badge variant="outline" className="self-start sm:self-auto font-mono">
+            {user.division?.code || "DIVISI"}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6 space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Rata-rata Skor KPI Divisi */}
+          <div className="rounded-lg border p-4 bg-card">
+            <p className="text-xs font-medium text-muted-foreground">Rata-rata Skor Divisi</p>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-bold">{avgKpi}</span>
+              <span className="text-xs text-muted-foreground">/ 100</span>
+              <Badge
+                className={`ml-auto text-xs ${
+                  isGood
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                    : isWarning
+                      ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                      : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                }`}
+              >
+                {isGood ? "Baik" : isWarning ? "Cukup" : "Perlu Evaluasi"}
+              </Badge>
+            </div>
+            <Progress value={avgKpi} className="mt-3 h-2" />
+          </div>
+
+          {/* Total Rekan Divisi */}
+          <div className="rounded-lg border p-4 bg-card">
+            <p className="text-xs font-medium text-muted-foreground">Total Rekan Satu Tim</p>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-bold">{divInfo?.totalMembers ?? 0}</span>
+              <span className="text-xs text-muted-foreground">orang pengurus</span>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Jabatan Anda:{" "}
+              <b className="text-foreground">{user.profile?.jabatan || "Anggota"}</b>
+            </p>
+          </div>
+
+          {/* Tautan Cepat ke Struktur */}
+          <div className="rounded-lg border p-4 bg-card flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Struktur Organisasi</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Lihat bagan kepengurusan dan susunan posisi di divisi Anda.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild className="mt-3 w-full justify-between">
+              <Link to="/struktur">
+                <span>Bagan Organisasi</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Daftar Anggota Divisi */}
+        {divInfo?.members && divInfo.members.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Rekan Satu Divisi ({divInfo.members.length})
+            </p>
+            <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-3">
+              {divInfo.members.map((m: any) => (
+                <div
+                  key={m.id}
+                  className={`flex items-center gap-3 rounded-lg border p-2.5 transition-colors ${
+                    m.id === user.userId ? "border-primary/50 bg-primary/5" : "bg-card"
+                  }`}
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={m.avatar_url ?? undefined} />
+                    <AvatarFallback className="text-xs font-medium">
+                      {(m.full_name ?? "?").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold">
+                      {m.full_name} {m.id === user.userId && "(Anda)"}
+                    </p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {m.jabatan || "Anggota"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ========================================================
+   KOMPONEN KHUSUS ANGGOTA: 2. Widget "Tugas & Jobdesk Saya"
+======================================================== */
+function MyPendingJobdesks({ userId }: { userId: string }) {
+  const { data: jobs, isLoading } = useQuery({
+    queryKey: ["myPendingJobdesks", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("jobdesks")
+        .select("id, title, deadline, status, seksi_name, prokers(name)")
+        .eq("profile_id", userId)
+        .in("status", ["ditugaskan", "ditolak"])
+        .order("created_at", { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  return (
+    <Card className="flex flex-col h-full">
+      <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <div>
+          <CardTitle className="text-base flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            Tugas & Jobdesk Belum Selesai
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Daftar tugas yang perlu Anda kerjakan atau revisi.
+          </CardDescription>
+        </div>
+        <Button variant="ghost" size="sm" asChild className="gap-1 text-xs -mr-2">
+          <Link to="/jobdesk">
+            Lihat Semua <ArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-3">
+        {isLoading ? (
+          <p className="text-xs text-muted-foreground py-4 text-center">Memuat jobdesk...</p>
+        ) : (jobs ?? []).length === 0 ? (
+          <div className="rounded-lg border border-dashed p-6 text-center">
+            <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500 mb-2" />
+            <p className="text-sm font-semibold">Semua Jobdesk Selesai!</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tidak ada tugas yang tertunda. Semua jobdesk Anda telah diajukan atau disetujui.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {jobs.map((j: any) => {
+              const isRevision = j.status === "ditolak";
+              return (
+                <div
+                  key={j.id}
+                  className="flex flex-col gap-2 rounded-lg border p-3 hover:bg-muted/40 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium text-xs sm:text-sm line-clamp-1">{j.title}</p>
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 text-[10px] ${
+                        isRevision
+                          ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                          : "border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                      }`}
+                    >
+                      {isRevision ? "Perlu Revisi" : "Belum Selesai"}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between text-[11px] text-muted-foreground">
+                    <span>
+                      {j.prokers?.name ? `Proker: ${j.prokers.name}` : j.seksi_name || "Jobdesk Divisi"}
+                    </span>
+                    {j.deadline && (
+                      <span className="flex items-center gap-1 font-mono">
+                        <Clock className="h-3 w-3" /> Deadline: {j.deadline}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ========================================================
+   KOMPONEN KHUSUS ANGGOTA: 3. Widget "Kegiatan & Rapat Terdekat"
+======================================================== */
+function MyUpcomingMeetings({ divisionId }: { divisionId: string | null }) {
+  const { data: meetings, isLoading } = useQuery({
+    queryKey: ["myUpcomingMeetings", divisionId],
+    queryFn: async () => {
+      let query = supabase
+        .from("meetings")
+        .select(
+          "id, title, meeting_date, start_time, meeting_type, divisions(name, code), prokers(name)",
+        )
+        .order("meeting_date", { ascending: false })
+        .limit(4);
+
+      if (divisionId) {
+        query = query.or(`division_id.is.null,division_id.eq.${divisionId}`);
+      } else {
+        query = query.is("division_id", null);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  return (
+    <Card className="flex flex-col h-full">
+      <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <div>
+          <CardTitle className="text-base flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-primary" />
+            Kegiatan & Rapat Terdekat
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Agenda rapat umum dan kegiatan divisi Anda.
+          </CardDescription>
+        </div>
+        <Button variant="ghost" size="sm" asChild className="gap-1 text-xs -mr-2">
+          <Link to="/meetings">
+            Lihat Jadwal <ArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-3">
+        {isLoading ? (
+          <p className="text-xs text-muted-foreground py-4 text-center">Memuat agenda kegiatan...</p>
+        ) : (meetings ?? []).length === 0 ? (
+          <div className="rounded-lg border border-dashed p-6 text-center">
+            <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
+            <p className="text-sm font-semibold">Belum Ada Agenda</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Belum ada rapat baru yang dijadwalkan oleh pengurus.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {meetings.map((m: any) => (
+              <div
+                key={m.id}
+                className="flex items-center justify-between gap-3 rounded-lg border p-3 hover:bg-muted/40 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-xs sm:text-sm truncate">{m.title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1 font-mono">
+                      <Clock className="h-3 w-3" />
+                      {m.meeting_date} · {m.start_time?.slice(0, 5)} WIB
+                    </span>
+                    {m.prokers?.name && (
+                      <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                        {m.prokers.name}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <Badge variant="outline" className="shrink-0 text-[10px]">
+                  {m.divisions?.code ? m.divisions.code : "Umum"}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ========================================================
+   KOMPONEN PIMPINAN: Analisis Rata-rata 9 Divisi (Staff & Kadiv)
+======================================================== */
 function DivisionOverview({ isStaff }: { isStaff: boolean }) {
   const { data: divs } = useQuery({
     queryKey: ["divisions"],
@@ -137,7 +512,7 @@ function DivisionOverview({ isStaff }: { isStaff: boolean }) {
       );
       return results;
     },
-    enabled: true, // Diaktifkan selalu karena komponen ini hanya di-render untuk Staff & Kadiv
+    enabled: true,
   });
 
   const chartData = (divs ?? []).map((d: { id: string; code: string; name: string }) => {
@@ -188,6 +563,9 @@ function DivisionOverview({ isStaff }: { isStaff: boolean }) {
   );
 }
 
+/* ========================================================
+   KOMPONEN BPH / HR ADMIN: Ringkasan Proker
+======================================================== */
 function ProkerSummary() {
   const { data: prokerCounts, isLoading } = useQuery({
     queryKey: ["prokerCounts"],
