@@ -51,12 +51,13 @@ export function PwaInstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
 
-    // Also register Service Worker here
+    // Also register Service Worker here with auto-update
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((reg) => {
-          console.log("[PWA] Service Worker terdaftar dengan scope:", reg.scope);
+          reg.update();
+          console.log("[PWA] Service Worker aktif:", reg.scope);
         })
         .catch((err) => {
           console.warn("[PWA] Gagal mendaftarkan Service Worker:", err);

@@ -1,6 +1,5 @@
-const CACHE_NAME = "hmm-kpi-v1";
+const CACHE_NAME = "hmm-kpi-v2";
 const STATIC_ASSETS = [
-  "/",
   "/manifest.json",
   "/hmm-logo.png",
   "/pwa-192x192.png",
@@ -10,7 +9,7 @@ const STATIC_ASSETS = [
   "/favicon.ico",
 ];
 
-// 1. Install event: cache core static assets
+// 1. Install event: cache core static assets (never cache root HTML so updates are instant)
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -22,7 +21,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// 2. Activate event: clean up older caches
+// 2. Activate event: clean up all older caches immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -38,7 +37,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// 3. Fetch event: Stale-While-Revalidate for static assets, Network-First for HTML/APIs
+// 3. Fetch event: Stale-While-Revalidate for images/fonts, Network-First for HTML/APIs/JS
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -52,20 +51,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets (images, icons, fonts, css, js): cache first / stale while revalidate
+  // Media assets (images, icons, fonts)
   if (
-    url.pathname.startsWith("/assets/") ||
     url.pathname.endsWith(".png") ||
     url.pathname.endsWith(".jpg") ||
     url.pathname.endsWith(".ico") ||
-    url.pathname.endsWith(".json") ||
     url.hostname.includes("fonts.gstatic.com") ||
     url.hostname.includes("fonts.googleapis.com")
   ) {
     event.respondWith(
       caches.match(req).then((cachedResponse) => {
         if (cachedResponse) {
-          // Fetch update in background
           fetch(req)
             .then((networkResponse) => {
               if (networkResponse && networkResponse.status === 200) {
@@ -87,74 +83,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigation requests (HTML): Network first with cache fallback
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((networkResponse) => {
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match(req).then((cached) => {
-            return cached || caches.match("/");
-          });
-        }),
-    );
-    return;
-  }
-
-  // Default: Network with cache fallback
+  // For all other requests (HTML navigation, JS chunks, CSS): Network-First
   event.respondWith(
-    fetch(req).catch(() => {
-      return caches.match(req);
-    }),
-  );
-});
-
-// 4. Push notifications support
-self.addEventListener("push", (event) => {
-  let data = {
-    title: "HMM KPI — Notifikasi",
-    body: "Ada pembaruan kegiatan di HMM FEB UNPAK.",
-    url: "/",
-  };
-  if (event.data) {
-    try {
-      data = { ...data, ...event.data.json() };
-    } catch {
-      data.body = event.data.text();
-    }
-  }
-
-  const options = {
-    body: data.body,
-    icon: "/pwa-192x192.png",
-    badge: "/pwa-192x192.png",
-    vibrate: [100, 50, 100],
-    data: {
-      url: data.url || "/",
-    },
-  };
-
-  event.waitUntil(self.registration.showNotification(data.title, options));
-});
-
-// 5. Notification click event
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  const targetUrl = event.notification.data?.url || "/";
-
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      for (const client of windowClients) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
-          client.navigate(targetUrl);
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    }),
+    fetch(req)
+      .then((networkResponse) => {
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(req).then((cached) => {
+          return cached || new Response("Offline", { status: 503 });
+        });
+      }),
   );
 });

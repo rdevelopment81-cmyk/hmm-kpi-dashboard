@@ -20,6 +20,7 @@ import {
   Clock,
   AlertCircle,
   Building2,
+  RotateCw,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { STATUS_MAP } from "@/routes/_authenticated/prokers";
@@ -38,11 +39,22 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">
-          Selamat datang, {user.profile?.full_name || "Anggota"} 👋
-        </h1>
-        <p className="text-sm text-muted-foreground">Ringkasan kinerja Anda dan divisi terkait.</p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">
+            Selamat datang, {user.profile?.full_name || "Anggota"} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground">Ringkasan kinerja Anda dan divisi terkait.</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 text-xs self-start sm:self-auto"
+          onClick={() => window.location.reload()}
+          title="Muat ulang halaman untuk mengambil pembaruan terbaru"
+        >
+          <RotateCw className="h-3.5 w-3.5" /> Segarkan Halaman
+        </Button>
       </div>
 
       {/* 3 Kartu KPI Pribadi untuk semua role */}
@@ -160,8 +172,12 @@ function MyDivisionCard({ user }: { user: any }) {
 
       const scores = await Promise.all(
         (members ?? []).map(async (m: { id: string }) => {
-          const { data } = await supabase.rpc("calculate_kpi", { _profile_id: m.id });
-          return (data as any)?.kpi_score ?? 0;
+          try {
+            const { data } = await supabase.rpc("calculate_kpi", { _profile_id: m.id });
+            return (data as any)?.kpi_score ?? 0;
+          } catch {
+            return 0;
+          }
         }),
       );
 
@@ -319,15 +335,23 @@ function MyPendingJobdesks({ userId }: { userId: string }) {
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["myPendingJobdesks", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("jobdesks")
-        .select("id, title, deadline, status, seksi_name, prokers(name)")
-        .eq("profile_id", userId)
-        .in("status", ["ditugaskan", "ditolak"])
-        .order("created_at", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return data ?? [];
+      try {
+        const { data, error } = await supabase
+          .from("jobdesks")
+          .select("id, title, deadline, status, seksi_name, prokers(name)")
+          .eq("profile_id", userId)
+          .in("status", ["ditugaskan", "ditolak"])
+          .order("created_at", { ascending: false })
+          .limit(4);
+        if (error) {
+          console.warn("Error fetching pending jobdesks:", error);
+          return [];
+        }
+        return data ?? [];
+      } catch (err) {
+        console.warn("Exception in myPendingJobdesks:", err);
+        return [];
+      }
     },
   });
 
@@ -409,22 +433,30 @@ function MyUpcomingMeetings({ divisionId }: { divisionId: string | null }) {
   const { data: meetings, isLoading } = useQuery({
     queryKey: ["myUpcomingMeetings", divisionId],
     queryFn: async () => {
-      let query = supabase
-        .from("meetings")
-        .select(
-          "id, title, meeting_date, start_time, meeting_type, divisions(name, code), prokers(name)",
-        )
-        .order("meeting_date", { ascending: false })
-        .limit(4);
+      try {
+        let query = supabase
+          .from("meetings")
+          .select(
+            "id, title, meeting_date, start_time, meeting_type, divisions(name, code), prokers(name)",
+          )
+          .order("meeting_date", { ascending: false })
+          .limit(4);
 
-      if (divisionId) {
-        query = query.or(`division_id.is.null,division_id.eq.${divisionId}`);
-      } else {
-        query = query.is("division_id", null);
+        if (divisionId) {
+          query = query.or(`division_id.is.null,division_id.eq.${divisionId}`);
+        } else {
+          query = query.is("division_id", null);
+        }
+        const { data, error } = await query;
+        if (error) {
+          console.warn("Error fetching meetings:", error);
+          return [];
+        }
+        return data ?? [];
+      } catch (err) {
+        console.warn("Exception in myUpcomingMeetings:", err);
+        return [];
       }
-      const { data, error } = await query;
-      if (error) throw error;
-      return data ?? [];
     },
   });
 
